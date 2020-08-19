@@ -341,13 +341,13 @@ void MainWindow::onBtnLogonClicked()
         ui->lineEditPass->clear();
         return;
     }
-
+#ifdef _USER_DRV_API_
     //获取用户信息及指静脉信息
     memset(m_stUserData.user_name, 0 ,sizeof(m_stUserData.user_name));
     memset(m_stUserData.passwd, 0 ,sizeof(m_stUserData.passwd));
     wcscpy(m_stUserData.user_name, wstrUserName.c_str());
     wcscpy(m_stUserData.passwd, wstrPass.c_str());
-
+#endif
     qDebug()<<"更新用户信息";
     int nAdd = m_userManage.QF_userAdd(&m_stUserData);
     if(0 > nAdd){
@@ -355,7 +355,10 @@ void MainWindow::onBtnLogonClicked()
         qDebug()<<"添加用户失败"<<QString::fromStdWString(wstrUserName)<<QString::fromStdWString(wstrPass);
         return;
     }
-    StUserEx* pUserEx = m_userManage.QF_getUserInfoByUserName(m_stUserData.user_name);
+    StUserEx* pUserEx = NULL;
+#ifdef _USER_DRV_API_
+    pUserEx = m_userManage.QF_getUserInfoByUserName(m_stUserData.user_name);
+#endif
     if(NULL == pUserEx){
         ui->labelPassMassage->setText(tr("用户信息获取失败，无法登陆"));
         qDebug()<<"用户信息获取失败，无法登陆"<<QString::fromStdWString(wstrUserName)<<QString::fromStdWString(wstrPass);
@@ -368,7 +371,9 @@ void MainWindow::onBtnLogonClicked()
         vein.null_id = pVeinEx->null_id;
         vein.user_id = pVeinEx->user_id;
         vein.vein_id = pVeinEx->vein_id;
+#ifdef _USER_DRV_API_
         strcpy(vein.temp, pVeinEx->temp);
+#endif
         QToolButton* pCurrentButton = bindButtonFinger(vein);
         if(NULL == pCurrentButton) {
             XMessageBox::warning(this, tr("警告"), tr("指静脉信息绑定错误，无法使用"));
@@ -502,8 +507,9 @@ void MainWindow::onBtnAddVeinClicked()
     _FingerProgress(0.99*_MaxProgressBar);
 
     //登记指静脉信息
-
+#ifdef _USER_DRV_API_
     strcpy(pVein->temp, cVeinComplete);
+#endif
     nCreate = m_userManage.QF_veinAdd(pVein);
     if(0 > nCreate){
         _FingerProgress(0*_MaxProgressBar);
@@ -539,9 +545,10 @@ void MainWindow::onBtnFingerRemoveClicked()
         ui->labelFingerText->setText(tr("指静脉信息删除失败，请重试"));
         return;
     }
+#ifdef _USER_DRV_API_
     //清空成员变量中记录的信息
     memset(m_mapButtonFinger[m_pCurrenFingerButton]->temp, 0, sizeof(m_mapButtonFinger[m_pCurrenFingerButton]->temp));
-
+#endif
     ui->labelFingerText->setText(tr("信息删除完成"));
     m_pCurrenFingerButton->setStyleSheet(_ButtonFingerNoDataStytle);
     QToolButton* pBloodButton = m_pCurrenFingerButton->property(_ButtonPropertyName).value<QToolButton*>();
@@ -594,7 +601,9 @@ void MainWindow::onBtnFingerChecked()
     _FingerProgress(0.9*_MaxProgressBar);
     ui->labelFingerText->setText(tr("正在验证指静脉信息，请稍后"));
     //验证信息
+#ifdef _USER_DRV_API_
     nCompare = m_userManage.QF_veinVerifyUser(cVeinData, pVein->temp);
+#endif
     if(0 != nCompare){
         ui->labelFingerText->setText(tr("指静脉信息不匹配，请重试"));
         goto ToFingerDisCon;
@@ -659,7 +668,9 @@ void MainWindow::initFingerData(QToolButton *button, int index)
     StVein* vein = new StVein;
     vein->fg_id = index;
     vein->user_id = m_stUserData.user_id;
+#ifdef _USER_DRV_API_
     memset(vein->temp, 0, sizeof(vein->temp));
+#endif
     m_mapButtonFinger.insert(button, vein);
     connect(button, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
 }
@@ -687,7 +698,9 @@ QToolButton* MainWindow::bindButtonFinger(StVein vein)
         pVein->user_id = vein.user_id;
         pVein->vein_id = vein.vein_id;
         pVein->null_id = vein.null_id;
+#ifdef _USER_DRV_API_
         strcpy(pVein->temp, vein.temp);
+#endif
         return button;
     }
     return NULL;

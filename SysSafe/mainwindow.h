@@ -27,7 +27,9 @@ struct StFingerData
         stData.user_id = 0;
         stData.vein_id = 0;
         stData.null_id = 0;
+#ifdef _USER_DRV_API_
         memset(stData.temp, 0, sizeof(stData.temp));
+#endif
     }
 };
 

@@ -8,7 +8,7 @@ QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-DEFINES += _USER_DRV_API_
+win32:DEFINES += _USER_DRV_API_
 
 TARGET = SysSafe
 TEMPLATE = app
@@ -16,8 +16,10 @@ TEMPLATE = app
 #程序单例运行使用插件
 include(./qtsingleapplication/src/qtsingleapplication.pri)
 
-#显示调试信息
-#CONFIG +=console
+CONFIG(debug, debug|release){
+    #显示调试信息
+    CONFIG +=console
+}
 
 TRANSLATIONS = language.ts
 
