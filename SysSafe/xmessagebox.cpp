@@ -39,7 +39,7 @@ XMessageBox::~XMessageBox()
 
 XMessageBox::StandardButton XMessageBox::information(QWidget * parent, const QString & title, const QString & text)
 {
-	XMessageBox box(parent, title, text, QMessageBox::standardIcon(QMessageBox::Icon::Information));
+    XMessageBox box(parent, title, text, QMessageBox::standardIcon(QMessageBox::Information));
     XMessageBox::StandardButton stand = XMessageBox::No;
     box.setStyleSheet(_MessageBoxStyle_);
     if (QDialog::Accepted == box.exec()) stand = XMessageBox::Yes;
@@ -48,7 +48,7 @@ XMessageBox::StandardButton XMessageBox::information(QWidget * parent, const QSt
 
 XMessageBox::StandardButton XMessageBox::question(QWidget * parent, const QString & title, const QString & text)
 {
-	XMessageBox box(parent, title, text, QMessageBox::standardIcon(QMessageBox::Icon::Question), true);
+    XMessageBox box(parent, title, text, QMessageBox::standardIcon(QMessageBox::Question), true);
     XMessageBox::StandardButton stand = XMessageBox::No;
     box.setStyleSheet(_MessageBoxStyle_);
     if (QDialog::Accepted == box.exec()) stand = XMessageBox::Yes;
@@ -57,7 +57,7 @@ XMessageBox::StandardButton XMessageBox::question(QWidget * parent, const QStrin
 
 XMessageBox::StandardButton XMessageBox::warning(QWidget * parent, const QString & title, const QString & text)
 {
-	XMessageBox box(parent, title, text, QMessageBox::standardIcon(QMessageBox::Icon::Warning));
+    XMessageBox box(parent, title, text, QMessageBox::standardIcon(QMessageBox::Warning));
     XMessageBox::StandardButton stand = XMessageBox::No;
     box.setStyleSheet(_MessageBoxStyle_);
     if (QDialog::Accepted == box.exec()) stand = XMessageBox::Yes;
