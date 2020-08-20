@@ -83,7 +83,10 @@ bool ServiceManager::apiCompatible()
     if(!connectToService())
         return false;
 
-    QDBusReply<int> reply = bioService->call("CheckAppApiVersion");
+    QDBusReply<int> reply = bioService->call("CheckAppApiVersion",
+                                             APP_API_MAJOR,
+                                             APP_API_MINOR,
+                                             APP_API_FUNC);
     if(!reply.isValid())
     {
         qDebug() << "check api compatibility error: " << reply.error();
