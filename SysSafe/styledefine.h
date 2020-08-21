@@ -21,6 +21,8 @@
 #define _SetFile "set.ini"
 //无操作时动作 [0,1,2,3]和界面对应
 #define _ActionSet "Setting/Action"
+//设备最长离线时间 秒
+#define _MaxTimeOutDeviceOffline "Setting/MaxTimeOutDeviceOffline"
 //语言 [0,1,2]和界面对应
 #define _LanguageSet "Setting/Language"
 //密码大写字母 1包含 0可以不包含

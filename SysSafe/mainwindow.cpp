@@ -145,6 +145,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTimer = new QTimer(this);
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onTimeOut()));
     m_pTimer->start(60*1000);
+
+    connect(&m_userManage, SIGNAL(timeOutDeviceOffline()), this, SLOT(onTimeOutDeviceOffline()));
 }
 
 
@@ -661,6 +663,11 @@ void MainWindow::onTimeOutOperation()
     if(0> nRes){
         qDebug()<<"操作执行失败";
     }
+}
+
+void MainWindow::onTimeOutDeviceOffline()
+{
+
 }
 
 void MainWindow::initFingerData(QToolButton *button, int index)

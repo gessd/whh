@@ -4,8 +4,21 @@
 #include <QtCore/QObject>
 #include <QtCore/QThread>
 #include <QtCore/QUuid>
+#include <QtCore/QTimer>
 #include <QtWidgets/QToolButton>
 #include "contorllthread.h"
+
+struct StDeviceStatus
+{
+    bool bUseint;           //使用中
+    unsigned int nLastTime; //上次连接设备时间 UTC时间
+    unsigned int nMaxDeviceOfflineTime; //设备最长离线时间
+    StDeviceStatus() {
+        bUseint = false;
+        nLastTime = 0;
+        nMaxDeviceOfflineTime = 0;
+    }
+};
 
 class UserManage : public QObject
 {
@@ -149,6 +162,26 @@ public:
      *	保存特征
      */
       int QF_saveVeinTemp(StVein stVein);
+
+      /**
+       * @brief 设置设备超时时间
+       * @param nTimeOut 秒
+       */
+      void setDeviceOfflineTimeOut(unsigned int nTimeOut);
+      /**
+       * @brief isDeviceUseIng
+       * @return 设备是否在用状态
+       */
+      bool isDeviceUseIng();
+      /**
+       * @brief getLastTimeUseDevice
+       * @return 设备上次使用时间
+       */
+      unsigned int getLastTimeUseDevice();
+private slots:
+      void onTimeOutCheckDecie();
+signals:
+      void timeOutDeviceOffline();
 private:
       void waitThreadRunFinish(_StFunParamAndRes& param, unsigned int timeout = 10);
 private:
@@ -157,6 +190,9 @@ private:
     bool m_bDeviceConnect;
 	_StFunParamAndRes* m_pParam;
 	ContorllThread* m_pUserThread;
+    QTimer* m_pTimerCheckDevice;
+    //设备状态
+    StDeviceStatus m_stDeviceStatus;
 };
 
 #endif // USERMANAGE_H

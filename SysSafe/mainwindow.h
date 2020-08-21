@@ -90,6 +90,8 @@ private slots:
     void onSetLanguageClicked(int buttonId);
     //定时器监控无操作处理
     void onTimeOutOperation();
+    //设备长时间离线
+    void onTimeOutDeviceOffline();
 private:
     //初始主页手指按钮
     void initFingerData(QToolButton* button, int index);

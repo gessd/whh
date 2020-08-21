@@ -2,7 +2,8 @@
 #include <QtWidgets/QApplication>
 #include <QtCore/QDebug>
 #include <QtCore/QDateTime>
-
+#include "styledefine.h"
+#include "setconfig.h"
 
 UserManage::UserManage(QObject *parent) : QObject(parent)
 {
@@ -11,6 +12,7 @@ UserManage::UserManage(QObject *parent) : QObject(parent)
     m_bDeviceConnect = false;
     m_pParam = new _StFunParamAndRes;
     m_pUserThread = new ContorllThread;
+    m_pTimerCheckDevice = new QTimer(this);
 }
 
 UserManage::~UserManage()
@@ -25,6 +27,11 @@ UserManage::~UserManage()
     if (m_pParam) {
         delete m_pParam;
         m_pParam = NULL;
+    }
+    if(m_pTimerCheckDevice){
+        m_pTimerCheckDevice->stop();
+        delete m_pTimerCheckDevice;
+        m_pTimerCheckDevice = NULL;
     }
 }
 
@@ -59,6 +66,10 @@ int UserManage::QF_connectDev()
     _StFunParamAndRes param;
     param.type = ft_connectDev;
     waitThreadRunFinish(param);
+    if(0 == param.nResult){
+        m_stDeviceStatus.bUseint = true;
+        m_stDeviceStatus.nLastTime = QDateTime::currentDateTime().toTime_t();
+    }
     return param.nResult;
 }
 
@@ -67,6 +78,10 @@ int UserManage::QF_disconnectDev()
     _StFunParamAndRes param;
     param.type = ft_disconnectDev;
     waitThreadRunFinish(param);
+    if(0 == param.nResult){
+        m_stDeviceStatus.bUseint = false;
+        m_stDeviceStatus.nLastTime = QDateTime::currentDateTime().toTime_t();
+    }
     return param.nResult;
 }
 
@@ -294,6 +309,34 @@ int UserManage::QF_saveVeinTemp(StVein stVein)
     param.pVein = &stVein;
     waitThreadRunFinish(param);
     return param.nResult;
+}
+
+void UserManage::setDeviceOfflineTimeOut(unsigned int nTimeOut)
+{
+    if(0 == nTimeOut) nTimeOut = 1;
+    m_stDeviceStatus.nMaxDeviceOfflineTime = nTimeOut;
+    m_pTimerCheckDevice->start(60*1000);
+}
+
+bool UserManage::isDeviceUseIng()
+{
+    return m_stDeviceStatus.bUseint;
+}
+
+unsigned int UserManage::getLastTimeUseDevice()
+{
+    return m_stDeviceStatus.nLastTime;
+}
+
+void UserManage::onTimeOutCheckDecie()
+{
+    //先检查设备是否在用状态
+    if(m_stDeviceStatus.bUseint) return;
+    unsigned int nCurrentTime = QDateTime::currentDateTime().toTime_t();
+    unsigned int nMaxTime = SetConfig::getSetValue(_MaxTimeOutDeviceOffline, 0).toUInt();
+    if((nCurrentTime-m_stDeviceStatus.nLastTime)>nMaxTime){
+        emit timeOutDeviceOffline();
+    }
 }
 
 void UserManage::waitThreadRunFinish(_StFunParamAndRes &param, unsigned int timeout)
