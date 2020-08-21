@@ -165,6 +165,30 @@ void MainWindow::verifyCallBack(const QDBusMessage &reply)
 void MainWindow::searchCallBack(const QDBusMessage &reply)
 {
     addDebugText("****function searchCallBack");
+
+    int result;
+    result = reply.arguments()[0].value<int>();
+    qDebug() << "Verify result: " << result;
+
+    if(result > 0) {
+        addDebugText("Search Result");
+        int count  = result;
+        QDBusArgument argument = reply.arguments().at(1).value<QDBusArgument>();
+        QList<QVariant> variantList;
+        argument >> variantList;
+        QList<SearchResult> results;
+        for(int i = 0; i < count; i++) {
+            QDBusArgument arg =variantList.at(i).value<QDBusArgument>();
+            SearchResult ret;
+            arg >> ret;
+            results.append(ret);
+            addDebugText(QString("-- searh info: uid:%1 index:%2 name:%3").arg(ret.uid).arg(ret.index).arg(ret.indexName));
+        }
+    }
+    else if(result >= DBUS_RESULT_NOTMATCH)
+        addDebugText("No matching features Found");
+    else
+        addDebugText(handleErrorResult(result));
 }
 
 void MainWindow::StopOpsCallBack(const QDBusMessage &reply)
@@ -205,4 +229,28 @@ QString MainWindow::handleErrorResult(int error)
         break;
     }
     return "未知错误";
+}
+
+void MainWindow::on_pushButton_4_clicked()
+{
+
+}
+
+void MainWindow::on_pushButton_5_clicked()
+{
+
+}
+
+void MainWindow::on_pushButton_6_clicked()
+{
+    int drvId = m_pFingerVeinDeviceINfo->device_id;
+    int uid = getuid();
+    int idxStart = 0;
+    int idxEnd = -1;
+    QList<QVariant> args;
+    args << drvId << uid << idxStart << idxEnd;
+
+    serviceInterface->callWithCallback("Search", args, this,
+                        SLOT(searchCallBack(const QDBusMessage &)),
+                        SLOT(errorCallBack(const QDBusError &)));
 }

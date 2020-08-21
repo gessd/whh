@@ -31,6 +31,12 @@ private slots:
     void searchCallBack(const QDBusMessage &reply);
     void StopOpsCallBack(const QDBusMessage &reply);
     void errorCallBack(const QDBusError &error);
+    void on_pushButton_4_clicked();
+
+    void on_pushButton_5_clicked();
+
+    void on_pushButton_6_clicked();
+
 private:
     QString handleErrorResult(int error);
 private:
