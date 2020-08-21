@@ -43,7 +43,9 @@ ContentPane::ContentPane(int uid, DeviceInfo *deviceInfo, QWidget *parent) :
                                           DBUS_INTERFACE
                                           , QDBusConnection::systemBus());
     serviceInterface->setTimeout(2147483647); /* 微秒 */
-	updateWidgetStatus();
+#ifdef _Whh_Debug_Define_Pro_
+    //updateWidgetStatus();
+#endif
 	/* 设置数据模型 */
 	setModel();
 	showDeviceInfo();
