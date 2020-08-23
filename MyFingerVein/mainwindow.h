@@ -40,7 +40,7 @@ private slots:
     void on_pushButton_5_clicked();
     //查找
     void on_pushButton_6_clicked();
-
+    //列表
     void on_pushButton_7_clicked();
 
 private:
