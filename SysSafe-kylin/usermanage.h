@@ -6,7 +6,6 @@
 #include <QtCore/QUuid>
 #include <QtCore/QTimer>
 #include <QtWidgets/QToolButton>
-#include "contorllthread.h"
 
 struct StDeviceStatus
 {

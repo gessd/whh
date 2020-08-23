@@ -8,9 +8,6 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QListWidgetItem>
 #include <QtGui/QMovie>
-#include "createuserdialog.h"
-//#include "dfcx_common.h"
-//#include "dfcx_drv.h"
 #include "usermanage.h"
 
 #include "customtype.h"
