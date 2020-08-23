@@ -156,16 +156,16 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->btnFinger_7, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
     connect(ui->btnFinger_9, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
     connect(ui->btnFinger_10, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
-    ui->btnFinger_1->setProperty(_FingerButtonPropertyName, QString(_FingerStartIndex).toInt()+1);
-    ui->btnFinger_2->setProperty(_FingerButtonPropertyName, QString(_FingerStartIndex).toInt()+2);
-    ui->btnFinger_3->setProperty(_FingerButtonPropertyName, QString(_FingerStartIndex).toInt()+3);
-    ui->btnFinger_4->setProperty(_FingerButtonPropertyName, QString(_FingerStartIndex).toInt()+4);
-    ui->btnFinger_5->setProperty(_FingerButtonPropertyName, QString(_FingerStartIndex).toInt()+5);
-    ui->btnFinger_6->setProperty(_FingerButtonPropertyName, QString(_FingerStartIndex).toInt()+6);
-    ui->btnFinger_7->setProperty(_FingerButtonPropertyName, QString(_FingerStartIndex).toInt()+7);
-    ui->btnFinger_8->setProperty(_FingerButtonPropertyName, QString(_FingerStartIndex).toInt()+8);
-    ui->btnFinger_9->setProperty(_FingerButtonPropertyName, QString(_FingerStartIndex).toInt()+9);
-    ui->btnFinger_10->setProperty(_FingerButtonPropertyName, QString(_FingerStartIndex).toInt()+10);
+    ui->btnFinger_1->setProperty(_FingerButtonPropertyName, _FingerStartIndex+1);
+    ui->btnFinger_2->setProperty(_FingerButtonPropertyName, _FingerStartIndex+2);
+    ui->btnFinger_3->setProperty(_FingerButtonPropertyName, _FingerStartIndex+3);
+    ui->btnFinger_4->setProperty(_FingerButtonPropertyName, _FingerStartIndex+4);
+    ui->btnFinger_5->setProperty(_FingerButtonPropertyName, _FingerStartIndex+5);
+    ui->btnFinger_6->setProperty(_FingerButtonPropertyName, _FingerStartIndex+6);
+    ui->btnFinger_7->setProperty(_FingerButtonPropertyName, _FingerStartIndex+7);
+    ui->btnFinger_8->setProperty(_FingerButtonPropertyName, _FingerStartIndex+8);
+    ui->btnFinger_9->setProperty(_FingerButtonPropertyName, _FingerStartIndex+9);
+    ui->btnFinger_10->setProperty(_FingerButtonPropertyName, _FingerStartIndex+10);
     _BindFingerBloodButton(ui->btnFinger_1, ui->btnBlood_1);
     _BindFingerBloodButton(ui->btnFinger_2, ui->btnBlood_2);
     _BindFingerBloodButton(ui->btnFinger_3, ui->btnBlood_3);
@@ -754,25 +754,25 @@ void MainWindow::onTimeOutDeviceOffline()
 
 QToolButton *MainWindow::getFingerButton(int index)
 {
-    if(index == ui->btnFinger_1->property(_FingerStartIndex).toInt()){
+    if(index == ui->btnFinger_1->property(_FingerButtonPropertyName).toInt()){
         return ui->btnFinger_1;
-    } else if(index == ui->btnFinger_2->property(_FingerStartIndex).toInt()){
+    } else if(index == ui->btnFinger_2->property(_FingerButtonPropertyName).toInt()){
         return ui->btnFinger_2;
-    } else if(index == ui->btnFinger_3->property(_FingerStartIndex).toInt()){
+    } else if(index == ui->btnFinger_3->property(_FingerButtonPropertyName).toInt()){
         return ui->btnFinger_3;
-    } else if(index == ui->btnFinger_4->property(_FingerStartIndex).toInt()){
+    } else if(index == ui->btnFinger_4->property(_FingerButtonPropertyName).toInt()){
         return ui->btnFinger_4;
-    } else if(index == ui->btnFinger_5->property(_FingerStartIndex).toInt()){
+    } else if(index == ui->btnFinger_5->property(_FingerButtonPropertyName).toInt()){
         return ui->btnFinger_5;
-    } else if(index == ui->btnFinger_6->property(_FingerStartIndex).toInt()){
+    } else if(index == ui->btnFinger_6->property(_FingerButtonPropertyName).toInt()){
         return ui->btnFinger_6;
-    } else if(index == ui->btnFinger_7->property(_FingerStartIndex).toInt()){
+    } else if(index == ui->btnFinger_7->property(_FingerButtonPropertyName).toInt()){
         return ui->btnFinger_7;
-    } else if(index == ui->btnFinger_8->property(_FingerStartIndex).toInt()){
+    } else if(index == ui->btnFinger_8->property(_FingerButtonPropertyName).toInt()){
         return ui->btnFinger_8;
-    } else if(index == ui->btnFinger_9->property(_FingerStartIndex).toInt()){
+    } else if(index == ui->btnFinger_9->property(_FingerButtonPropertyName).toInt()){
         return ui->btnFinger_9;
-    } else if(index == ui->btnFinger_10->property(_FingerStartIndex).toInt()){
+    } else if(index == ui->btnFinger_10->property(_FingerButtonPropertyName).toInt()){
         return ui->btnFinger_10;
     }
     return NULL;
