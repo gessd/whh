@@ -36,6 +36,7 @@ MainWindow::~MainWindow()
 void MainWindow::addDebugText(QString qstrText)
 {
     ui->textBrowser->append(qstrText);
+    qDebug()<<"===="<<qstrText;
 }
 
 void MainWindow::on_pushButton_clicked()
@@ -45,6 +46,7 @@ void MainWindow::on_pushButton_clicked()
     QString username = QString(pwd->pw_name);
     qDebug()<<"----username"<<username;
     addDebugText(QString("--UserName:%1").arg(username));
+    ui->lineEditUser->setText(username);
 }
 
 /**
@@ -97,6 +99,7 @@ void MainWindow::getDeviceInfo()
             m_pFingerVeinDeviceINfo = deviceInfo;
         }
     }
+    ui->lineEditDevice->setText(QString::number(m_pFingerVeinDeviceINfo->device_id));
 }
 
 /**
@@ -125,18 +128,21 @@ void MainWindow::on_pushButton_2_clicked()
 //录入
 void MainWindow::on_pushButton_3_clicked()
 {
+    int drvId = m_pFingerVeinDeviceINfo->device_id;
     int uid = getuid();
+    int idx = ui->lineEditid->text().trimmed().toInt();
+    QString idxName = ui->lineEditname->text().trimmed();
     QList<QVariant> args;
-    //args << drvId << uid << idx << idxName;
-    args<<m_pFingerVeinDeviceINfo->device_id<<uid<<1<<"whhhh";
+    args << drvId << uid << idx << idxName;
+    //args<<m_pFingerVeinDeviceINfo->device_id<<uid<<1<<"whhhh";
     serviceInterface->callWithCallback("Enroll", args, this,
                         SLOT(enrollCallBack(const QDBusMessage &)),
                         SLOT(errorCallBack(const QDBusError &)));
 }
 
-void MainWindow::onUSBDeviceHotPlug(int, int, int)
+void MainWindow::onUSBDeviceHotPlug(int int1, int int2, int int3)
 {
-    addDebugText("****function onUSBDeviceHotPlug");
+    addDebugText(QString("****function onUSBDeviceHotPlug %1 %2 %3").arg(int1).arg(int2).arg(int3));
 }
 
 void MainWindow::enrollCallBack(const QDBusMessage &reply)
@@ -160,6 +166,17 @@ void MainWindow::enrollCallBack(const QDBusMessage &reply)
 void MainWindow::verifyCallBack(const QDBusMessage &reply)
 {
     addDebugText("****function verifyCallBack");
+    int result;
+    result = reply.arguments()[0].value<int>();
+    qDebug() << "Verify result: " << result;
+
+    if(result >= 0) {
+        addDebugText("Verify successfully");
+    } else if(result == DBUS_RESULT_NOTMATCH) {
+        addDebugText("Not Match");
+    } else {
+        addDebugText(handleErrorResult(result));
+    }
 }
 
 void MainWindow::searchCallBack(const QDBusMessage &reply)
@@ -203,6 +220,30 @@ void MainWindow::errorCallBack(const QDBusError &error)
     addDebugText(error.message());
 }
 
+void MainWindow::errorCallback(QDBusError error)
+{
+    addDebugText(error.message());
+}
+
+void MainWindow::showFeaturesCallback(QDBusMessage callbackReply)
+{
+    QList<QDBusVariant> qlist;
+    FeatureInfo *featureInfo;
+    int listsize;
+
+    QList<QVariant> variantList = callbackReply.arguments();
+    listsize = variantList[0].value<int>();
+    variantList[1].value<QDBusArgument>() >> qlist;
+    for (int i = 0; i < listsize; i++) {
+        featureInfo = new FeatureInfo;
+        qlist[i].variant().value<QDBusArgument>() >> *featureInfo;
+        //dataModel->appendData(featureInfo);
+        QString qstrInfo = QString("---- uid:%1 biotype:%2 device_shortname:%3 index:%4 index_name:%5")
+                .arg(featureInfo->uid).arg(featureInfo->biotype).arg(featureInfo->device_shortname).arg(featureInfo->index).arg(featureInfo->index_name);
+        addDebugText(qstrInfo);
+    }
+}
+
 QString MainWindow::handleErrorResult(int error)
 {
     int deviceId = m_pFingerVeinDeviceINfo->device_id;
@@ -231,16 +272,37 @@ QString MainWindow::handleErrorResult(int error)
     return "未知错误";
 }
 
+//验证
 void MainWindow::on_pushButton_4_clicked()
 {
+    int drvId = m_pFingerVeinDeviceINfo->device_id;
+    int uid = getuid();
+    int idx = ui->lineEditid->text().trimmed().toInt();
+    QList<QVariant> args;
+    args << drvId << uid << idx;
 
+    serviceInterface->callWithCallback("Verify", args, this,
+                        SLOT(verifyCallBack(const QDBusMessage &)),
+                        SLOT(errorCallBack(const QDBusError &)));
 }
 
+//删除
 void MainWindow::on_pushButton_5_clicked()
 {
-
+    int drvId = m_pFingerVeinDeviceINfo->device_id;
+    int uid = getuid();
+    int idxStart = ui->lineEditid->text().trimmed().toInt();
+    int idxEnd = -1;
+    QDBusPendingReply<int> reply = serviceInterface->call("Clean", drvId, uid, idxStart, idxEnd);
+    reply.waitForFinished();
+    if (reply.isError()) {
+        qWarning() << "DBUS:" << reply.error();
+        return;
+    }
+    addDebugText("----删除完成");
 }
 
+//查找
 void MainWindow::on_pushButton_6_clicked()
 {
     int drvId = m_pFingerVeinDeviceINfo->device_id;
@@ -253,4 +315,18 @@ void MainWindow::on_pushButton_6_clicked()
     serviceInterface->callWithCallback("Search", args, this,
                         SLOT(searchCallBack(const QDBusMessage &)),
                         SLOT(errorCallBack(const QDBusError &)));
+}
+
+void MainWindow::on_pushButton_7_clicked()
+{
+    int drvId = m_pFingerVeinDeviceINfo->device_id;
+    int uid = getuid();
+    int idxStart = 0;
+    int idxEnd = -1;
+    QList<QVariant> args;
+    args << drvId<< uid << idxStart << idxEnd;
+
+    serviceInterface->callWithCallback("GetFeatureList", args, this,
+                        SLOT(showFeaturesCallback(QDBusMessage)),
+                        SLOT(errorCallback(QDBusError)));
 }
