@@ -57,7 +57,7 @@ enum _ActionDeviceOffline
 
 //指静脉信息起始ID
 #define _FingerStartIndex 1000
-#define _FingerButtonPropertyName "_fingername_"
+#define _ButtonFingerIndex "_fingerinde_"
 #define _FingerButtonIsInfo "_fingerinfo_"
 
 

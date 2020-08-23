@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
         XMessageBox::warning(&w, QObject::tr("警告"), QObject::tr("系统初始化失败，无法使用！"));
         return 0;
     }
-    w.showUserName();
+    w.showFingerInfo();
 
     int nExec = app.exec();
     w.sysUnInit();

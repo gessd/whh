@@ -26,17 +26,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    m_pTrayIcon = NULL;
-    m_pTrayIconMenu = NULL;
-    m_pQuitAction = NULL;
-    m_pShowAction = NULL;
-    m_pTimer = NULL;
 
     //暂时不需要菜单栏及状态栏
     ui->btnTitleSet->setVisible(false);
     ui->labelPassMassage->clear();
-
-    //setWindowFlags();
+    m_pCurrenFingerButton = NULL;
     //去掉最大化与最小号窗口
     setWindowFlags(Qt::WindowMinMaxButtonsHint);
     //去掉边框
@@ -57,8 +51,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTrayIconMenu->addAction(m_pQuitAction);
     m_pTrayIcon = new QSystemTrayIcon(this);
     m_pTrayIcon->setContextMenu(m_pTrayIconMenu);
-
-    m_pCurrenFingerButton = NULL;
 
     QIcon icon(QIcon(":/images/heart.png"));
     m_pTrayIcon->setIcon(icon);
@@ -109,11 +101,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->labelMovieFinger->setMovie(m_pMovieFinger);
     m_pMovieFinger->start();
 
-    m_pTimerOperation = new QTimer(this);
-    m_pTimerOperation->setProperty("time", QVariant::fromValue(QDateTime::currentDateTime().toTime_t()));
-    m_pTimerOperation->start(60*1000);
-    connect(m_pTimerOperation, SIGNAL(timeout()), this, SLOT(onTimeOutOperation()));
-
     installEventFilter(this);
     //使用事件过滤器出来界面移动
     ui->widgetTitle->installEventFilter(this);
@@ -126,15 +113,8 @@ MainWindow::MainWindow(QWidget *parent) :
         setStyleSheet(qstrQss);
         qss.close();
     }
-
-    m_pTimer = new QTimer(this);
-    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onTimeOut()));
-    m_pTimer->start(60*1000);
-
-    connect(&m_userManage, SIGNAL(timeOutDeviceOffline()), this, SLOT(onTimeOutDeviceOffline()));
-
     //kylin
-    m_pFingerVeinDeviceINfo = NULL;
+    m_pFingerVeinDeviceInfo = NULL;
     /* 连接 DBus Daemon */
     serviceInterface = new QDBusInterface(DBUS_SERVICE, DBUS_PATH,
                                           DBUS_INTERFACE,
@@ -147,35 +127,16 @@ MainWindow::MainWindow(QWidget *parent) :
     //注册自定义数据类型
     registerCustomTypes();
 
-    connect(ui->btnFinger_1, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
-    connect(ui->btnFinger_2, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
-    connect(ui->btnFinger_3, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
-    connect(ui->btnFinger_4, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
-    connect(ui->btnFinger_5, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
-    connect(ui->btnFinger_6, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
-    connect(ui->btnFinger_7, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
-    connect(ui->btnFinger_9, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
-    connect(ui->btnFinger_10, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
-    ui->btnFinger_1->setProperty(_FingerButtonPropertyName, _FingerStartIndex+1);
-    ui->btnFinger_2->setProperty(_FingerButtonPropertyName, _FingerStartIndex+2);
-    ui->btnFinger_3->setProperty(_FingerButtonPropertyName, _FingerStartIndex+3);
-    ui->btnFinger_4->setProperty(_FingerButtonPropertyName, _FingerStartIndex+4);
-    ui->btnFinger_5->setProperty(_FingerButtonPropertyName, _FingerStartIndex+5);
-    ui->btnFinger_6->setProperty(_FingerButtonPropertyName, _FingerStartIndex+6);
-    ui->btnFinger_7->setProperty(_FingerButtonPropertyName, _FingerStartIndex+7);
-    ui->btnFinger_8->setProperty(_FingerButtonPropertyName, _FingerStartIndex+8);
-    ui->btnFinger_9->setProperty(_FingerButtonPropertyName, _FingerStartIndex+9);
-    ui->btnFinger_10->setProperty(_FingerButtonPropertyName, _FingerStartIndex+10);
-    _BindFingerBloodButton(ui->btnFinger_1, ui->btnBlood_1);
-    _BindFingerBloodButton(ui->btnFinger_2, ui->btnBlood_2);
-    _BindFingerBloodButton(ui->btnFinger_3, ui->btnBlood_3);
-    _BindFingerBloodButton(ui->btnFinger_4, ui->btnBlood_4);
-    _BindFingerBloodButton(ui->btnFinger_5, ui->btnBlood_5);
-    _BindFingerBloodButton(ui->btnFinger_6, ui->btnBlood_6);
-    _BindFingerBloodButton(ui->btnFinger_7, ui->btnBlood_7);
-    _BindFingerBloodButton(ui->btnFinger_8, ui->btnBlood_8);
-    _BindFingerBloodButton(ui->btnFinger_9, ui->btnBlood_9);
-    _BindFingerBloodButton(ui->btnFinger_10, ui->btnBlood_10);
+    bindButtonFinger(ui->btnFinger_1, _FingerStartIndex+1, ui->btnBlood_1);
+    bindButtonFinger(ui->btnFinger_2, _FingerStartIndex+2, ui->btnBlood_2);
+    bindButtonFinger(ui->btnFinger_3, _FingerStartIndex+3, ui->btnBlood_3);
+    bindButtonFinger(ui->btnFinger_4, _FingerStartIndex+4, ui->btnBlood_4);
+    bindButtonFinger(ui->btnFinger_5, _FingerStartIndex+5, ui->btnBlood_5);
+    bindButtonFinger(ui->btnFinger_6, _FingerStartIndex+6, ui->btnBlood_6);
+    bindButtonFinger(ui->btnFinger_7, _FingerStartIndex+7, ui->btnBlood_7);
+    bindButtonFinger(ui->btnFinger_8, _FingerStartIndex+8, ui->btnBlood_8);
+    bindButtonFinger(ui->btnFinger_9, _FingerStartIndex+9, ui->btnBlood_9);
+    bindButtonFinger(ui->btnFinger_10, _FingerStartIndex+10, ui->btnBlood_10);
 }
 
 MainWindow::~MainWindow()
@@ -223,25 +184,24 @@ int MainWindow::sysInit()
             if(_DeviceName_ == deviceInfo->device_shortname){
                 qDebug()<<"---device "<<i<<deviceInfo<<deviceInfo->device_id<<
                           deviceInfo->device_shortname<<deviceInfo->device_fullname<<deviceInfo->biotype;
-                m_pFingerVeinDeviceINfo = deviceInfo;
+                m_pFingerVeinDeviceInfo = deviceInfo;
             }
         }
     }
-    if(NULL == m_pFingerVeinDeviceINfo) return -1;
+    if(NULL == m_pFingerVeinDeviceInfo) return -1;
     return 0;
 }
 
 void MainWindow::sysUnInit()
 {
-    m_userManage.QF_unInit();
 }
 
-void MainWindow::showUserName()
+void MainWindow::showFingerInfo()
 {
     ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
 
     //获取已录入指静脉信息
-    int drvId = m_pFingerVeinDeviceINfo->device_id;
+    int drvId = m_pFingerVeinDeviceInfo->device_id;
     int uid = getuid();
     int idxStart = 0;
     int idxEnd = -1;
@@ -296,20 +256,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         return false;
     } else if(this == watched){
         //监控程序是否有操作
-        switch (event->type()) {
-        case QEvent::MouseButtonPress:
-        case QEvent::MouseButtonRelease:
-        case QEvent::MouseButtonDblClick:
-        case QEvent::MouseMove:
-        case QEvent::KeyPress:
-        case QEvent::KeyRelease:
-        case QEvent::Enter:
-        case QEvent::Leave:
-            m_pTimerOperation->setProperty("time", QVariant::fromValue(QDateTime::currentDateTime().toTime_t()));
-            break;
-        default:
-            break;
-        }
         return false;
     }
     return false;
@@ -317,7 +263,6 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
 void MainWindow::onShowWindow()
 {
-    if(false == m_userManage.isInit()) return;
     showNormal();
 }
 
@@ -325,7 +270,6 @@ void MainWindow::onCloseWindow()
 {
     qDebug()<<"准备关闭程序";
     uninitFingerData();
-    m_userManage.quitManage();
     QApplication::quit();
     qDebug()<<"程序关闭";
 }
@@ -373,21 +317,7 @@ void MainWindow::onBtnBackMainClicked()
 
 void MainWindow::onBtnSetUserPass()
 {
-    int nc = m_userManage.QF_checkPwd();
 
-    CreateUserDialog setUserDialog(this);
-    setUserDialog.setUserName(ui->lineEditUserName->text().trimmed());
-    if(QDialog::Accepted == setUserDialog.exec()){
-        QString qstrPass = setUserDialog.getPassword();
-        QString qstrUserName = ui->lineEditUserName->text().trimmed();
-        std::wstring wstrUserName = qstrUserName.toStdWString();
-        std::wstring wstrPass = qstrPass.toStdWString();
-        int nSet = m_userManage.QF_setPassword(const_cast<WCHAR*>(wstrUserName.c_str()), const_cast<WCHAR*>(wstrPass.c_str()));
-        if(0 > nSet){
-            ui->labelPassMassage->setText(tr("密码设置错误"));
-            onBtnSetUserPass();
-        }
-    }
 }
 
 void MainWindow::onMainWidgetCurrentChanged(int index)
@@ -401,71 +331,7 @@ void MainWindow::onMainWidgetCurrentChanged(int index)
 
 void MainWindow::onBtnLogonClicked()
 {
-    std::wstring wstrUserName = ui->lineEditUserName->text().trimmed().toStdWString();
-    std::wstring wstrPass = ui->lineEditPass->text().trimmed().toStdWString();
-    int nVeri = m_userManage.QF_veriPassword(const_cast<WCHAR*>(wstrUserName.c_str()), const_cast<WCHAR*>(wstrPass.c_str()));
-    if(0 != nVeri){
-        ui->labelPassMassage->setText(tr("登录失败: 未知的用户名或错误密码."));
-        ui->lineEditPass->clear();
-        return;
-    }
-#ifdef _USER_DRV_API_
-    //获取用户信息及指静脉信息
-    memset(m_stUserData.user_name, 0 ,sizeof(m_stUserData.user_name));
-    memset(m_stUserData.passwd, 0 ,sizeof(m_stUserData.passwd));
-    wcscpy(m_stUserData.user_name, wstrUserName.c_str());
-    wcscpy(m_stUserData.passwd, wstrPass.c_str());
-#endif
-    qDebug()<<"更新用户信息";
-    int nAdd = m_userManage.QF_userAdd(&m_stUserData);
-    if(0 > nAdd){
-        ui->labelPassMassage->setText(tr("用户信息创建失败，无法登陆"));
-        qDebug()<<"添加用户失败"<<QString::fromStdWString(wstrUserName)<<QString::fromStdWString(wstrPass);
-        return;
-    }
-    StUserEx* pUserEx = NULL;
-#ifdef _USER_DRV_API_
-    pUserEx = m_userManage.QF_getUserInfoByUserName(m_stUserData.user_name);
-#endif
-    if(NULL == pUserEx){
-        ui->labelPassMassage->setText(tr("用户信息获取失败，无法登陆"));
-        qDebug()<<"用户信息获取失败，无法登陆"<<QString::fromStdWString(wstrUserName)<<QString::fromStdWString(wstrPass);
-        return;
-    }
-    StVeinEx* pVeinEx = pUserEx->vein;
-    while (pVeinEx) {
-        StVein vein;
-        vein.fg_id = pVeinEx->fg_id;
-        vein.null_id = pVeinEx->null_id;
-        vein.user_id = pVeinEx->user_id;
-        vein.vein_id = pVeinEx->vein_id;
-#ifdef _USER_DRV_API_
-        strcpy(vein.temp, pVeinEx->temp);
-#endif
-        QToolButton* pCurrentButton = bindButtonFinger(vein);
-        if(NULL == pCurrentButton) {
-            XMessageBox::warning(this, tr("警告"), tr("指静脉信息绑定错误，无法使用"));
-            m_userManage.QF_freeUserInfo(pUserEx);
-            return;
-        } else {
-            //当前按钮有指静脉信息
-            pCurrentButton->setStyleSheet(_FingerStyleButton);
-            QToolButton* pBloodButton = pCurrentButton->property(_ButtonPropertyName).value<QToolButton*>();
-            if(pBloodButton) pBloodButton->setVisible(true);
-        }
-        pVeinEx = pVeinEx->next;
-    }
-    m_userManage.QF_freeUserInfo(pUserEx);
 
-    //登录验证成功
-    ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
-    ui->lineEditPass->clear();
-    ui->labelPassMassage->clear();
-
-    //设置设备最长离线时间
-    unsigned int nTimeOut = SetConfig::getSetValue(_MaxTimeOutDeviceOffline, 60).toInt();
-    if(0 == nTimeOut) nTimeOut = 60;
-    m_userManage.setDeviceOfflineTimeOut(nTimeOut);
 }
 
 void MainWindow::onItemClicked(QListWidgetItem *item)
@@ -503,191 +369,60 @@ void MainWindow::onBtnFingerClicked()
 
 void MainWindow::onBtnAddVeinClicked()
 {
-    if(NULL == m_pCurrenFingerButton) return;
-    StVein* pVein = m_mapButtonFinger[m_pCurrenFingerButton];
-    if(NULL == pVein) return;
-    pVein->user_id = m_stUserData.user_id;
-    ui->labelFingerText->setText(tr("准备录入指静脉信息"));
-
-    int nCon = m_userManage.QF_connectDev();
-    if(0 != nCon){
-        ui->labelFingerText->setText(tr("无法连接设备，请重试"));
+    int drvId = m_pFingerVeinDeviceInfo->device_id;
+    int uid = getuid();
+    int idx = m_pCurrenFingerButton->property(_ButtonFingerIndex).toInt();
+    QString idxName = QString::number(idx);
+    QList<QVariant> args;
+    args << drvId << uid << idx << idxName;
+    bool bCall = serviceInterface->callWithCallback("Enroll", args, this,
+                        SLOT(enrollCallBack(const QDBusMessage &)),
+                        SLOT(errorCallBack(const QDBusError &)));
+    if(false == bCall) {
+        ui->labelFingerText->setText(tr("录入操作错误"));
         return;
     }
-    ui->labelFingerText->setText(tr("设备连接成功，请放入手指"));
-    QWidget* curWidget = ui->stackedWidget->currentWidget();
-    if(curWidget){
-        //设置当前页面无效，防止误操作
-        curWidget->setEnabled(false);
-    }
-
-    QToolButton* pBloodButton = NULL;
-    int nCheck = -1;
-    const int nVienNum = 3;                               //需要录入三次
-    const int nVeinDataLen = 1024*20;
-    char cVeinData[nVienNum][nVeinDataLen] = {0};   //三次临时录入的指静脉信息
-    char cVeinComplete[10*nVeinDataLen] = {0};      //合并后完整的指静脉信息
-    float fVeinLen = -1;
-    int nCompare = -1;
-    int nCreate = -1;
-    unsigned int nStartTime = QDateTime::currentDateTime().toTime_t();
-
-    ui->labelFingerText->setText(tr("开始检测指静脉信息"));
-    _FingerProgress(_MaxProgressBar*0.05);
-    //录入时需要获取三遍指静脉特征然后融合后保存
-    for(int i=0; i<nVienNum; i++){
-        nCheck = m_userManage.QF_checkFinger(10, true);
-        if(0 >= nCheck) {
-            ui->labelFingerText->setText(tr("未检测到手指，请重新录入"));
-            goto ToFingerDisCon;
-        }
-        fVeinLen = m_userManage.QF_getVeinChara(cVeinData[i]);
-        if(0 >= fVeinLen) {
-            ui->labelFingerText->setText(tr("未检测到指静脉信息，请重新录入"));
-            goto ToFingerDisCon;
-        }
-        if(i>0){
-            //与上一次对比是否为同一根手指,不是则重新录入
-            nCompare = m_userManage.QF_veinCompare(cVeinData[i-1], cVeinData[i], 60);
-            if(0 > nCompare){
-                memset(cVeinData[i], 0, nVeinDataLen);
-                i--;
-                ui->labelFingerText->setText(tr("不是同一根手指，请重新录入"));
-                goto ToFingerDisCon;
-            }
-        }
-        _FingerProgress((i+1)*0.3*_MaxProgressBar);
-        ui->labelFingerText->setText(QString(tr("第%1次检测完成，请重新放入手指")).arg(i+1));
-
-        //timeout=-1 永远不超时
-        nCheck = m_userManage.QF_checkFinger(-1, false);
-        if(0 >= nCheck) {
-            ui->labelFingerText->setText(tr("请重新放入手指"));
-        }
-    }
-    ui->labelFingerText->setText(tr("指静脉信息录入完成，正在处理"));
-    //三次指静脉信息录入完成后合并信息
-    nCreate = m_userManage.QF_createVeinTemp(cVeinData[0], cVeinData[1], cVeinData[2], cVeinComplete);
-    if(0 >= nCreate){
-        _FingerProgress(0*_MaxProgressBar);
-        ui->labelFingerText->setText(tr("指静脉信息处理失败，请重新录入"));
-        goto ToFingerDisCon;
-    }
-    _FingerProgress(0.99*_MaxProgressBar);
-
-    //登记指静脉信息
-#ifdef _USER_DRV_API_
-    strcpy(pVein->temp, cVeinComplete);
-#endif
-    nCreate = m_userManage.QF_veinAdd(pVein);
-    if(0 > nCreate){
-        _FingerProgress(0*_MaxProgressBar);
-        ui->labelFingerText->setText(tr("指静脉信息登记失败，请重试"));
-        goto ToFingerDisCon;
-    }
-    _FingerProgress(1*_MaxProgressBar);
-    ui->labelFingerText->setText(tr("信息录入完成"));
-    showVeinCompareWidget(m_pCurrenFingerButton);
-
-    //录入完成主页对应血管图片
-    pBloodButton = m_pCurrenFingerButton->property(_ButtonPropertyName).value<QToolButton*>();
-    if(pBloodButton) pBloodButton->setVisible(true);
-    m_pCurrenFingerButton->setStyleSheet(_FingerStyleButton);
-ToFingerDisCon:
-    int nDiscon = m_userManage.QF_disconnectDev();
-    if(0 > nDiscon){
-        QString qstrLast = ui->labelFingerText->text()+" ";
-        ui->labelFingerText->setText(qstrLast+tr("错误，无法断开设备"));
-    }
-    curWidget->setEnabled(true);
+    _FingerProgress(_MaxProgressBar*0.1);
+    ui->labelFingerText->setText(tr("正在录入信息"));
 }
 
 void MainWindow::onBtnFingerRemoveClicked()
 {
-    if(NULL == m_pCurrenFingerButton) return;
-    StVein* pVein = m_mapButtonFinger[m_pCurrenFingerButton];
-    if(NULL == pVein) return;
-
-    ui->labelFingerText->setText(tr("正在删除信息，请稍后"));
-    int nDel = m_userManage.QF_veinDel(pVein);
-    if(0 > nDel){
-        ui->labelFingerText->setText(tr("指静脉信息删除失败，请重试"));
+    int drvId = m_pFingerVeinDeviceInfo->device_id;
+    int uid = getuid();
+    int idxStart = m_pCurrenFingerButton->property(_ButtonFingerIndex).toInt();
+    int idxEnd = -1;
+    _FingerProgress(_MaxProgressBar*0.1);
+    QDBusPendingReply<int> reply = serviceInterface->call("Clean", drvId, uid, idxStart, idxEnd);
+    reply.waitForFinished();
+    if (reply.isError()) {
+        ui->labelFingerText->setText(tr("删除失败")+" "+reply.error().message());
         return;
     }
-#ifdef _USER_DRV_API_
-    //清空成员变量中记录的信息
-    memset(m_mapButtonFinger[m_pCurrenFingerButton]->temp, 0, sizeof(m_mapButtonFinger[m_pCurrenFingerButton]->temp));
-#endif
-    ui->labelFingerText->setText(tr("信息删除完成"));
-    m_pCurrenFingerButton->setStyleSheet(_ButtonFingerNoDataStytle);
-    QToolButton* pBloodButton = m_pCurrenFingerButton->property(_ButtonPropertyName).value<QToolButton*>();
-    if(pBloodButton) pBloodButton->setVisible(false);
+    ui->labelFingerText->setText(tr("信息删除成功"));
+    _FingerProgress(_MaxProgressBar*1);
+    setButtonFingerInfo(m_pCurrenFingerButton, false);
     showVeinAddWidget(m_pCurrenFingerButton);
 }
 
 //信息验证
 void MainWindow::onBtnFingerChecked()
 {
-    if(NULL == m_pCurrenFingerButton) return;
-    StVein* pVein = m_mapButtonFinger[m_pCurrenFingerButton];
-    if(NULL == pVein) return;
+    int drvId = m_pFingerVeinDeviceInfo->device_id;
+    int uid = getuid();
+    int idx = m_pCurrenFingerButton->property(_ButtonFingerIndex).toInt();
+    QList<QVariant> args;
+    args << drvId << uid << idx;
 
-    _FingerProgress(0*_MaxProgressBar);
-    ui->labelFingerText->setText(tr("开始验证指静脉信息"));
-
-    int nCon = m_userManage.QF_connectDev();
-    if(0 != nCon){
-        ui->labelFingerText->setText(tr("无法连接设备，请重试"));
+    bool bCall = serviceInterface->callWithCallback("Verify", args, this,
+                        SLOT(verifyCallBack(const QDBusMessage &)),
+                        SLOT(errorCallBack(const QDBusError &)));
+    if(false == bCall) {
+        ui->labelFingerText->setText(tr("验证操作错误"));
         return;
     }
-    QWidget* curWidget = ui->stackedWidget->currentWidget();
-    if(curWidget){
-        curWidget->setEnabled(false);
-    }
-
-    ui->labelFingerText->setText(tr("设备连接成功，请放入手指"));
-    int nCheck = -1;
-    const int nVeinDataLen = 1024*20;
-    char cVeinData[nVeinDataLen] = {0};
-    long lVeinLen = -1;
-    int nCompare = -1;
-    _FingerProgress(0.05*_MaxProgressBar);
-    nCheck = m_userManage.QF_checkFinger(10, true);
-    if(0 >= nCheck) {
-        ui->labelFingerText->setText(tr("未检测到手指，请重试"));
-        goto ToFingerDisCon;
-    }
-    //}
-    _FingerProgress(0.5*_MaxProgressBar);
-    ui->labelFingerText->setText(tr("正在检测指静脉信息，请稍后"));
-    //等待检测指静脉信息
-    lVeinLen = m_userManage.QF_getVeinChara(cVeinData);
-    if(0>= lVeinLen){
-        ui->labelFingerText->setText(tr("未检测到指静脉信息，请重试"));
-        goto ToFingerDisCon;
-    }
-    //}
-    _FingerProgress(0.9*_MaxProgressBar);
-    ui->labelFingerText->setText(tr("正在验证指静脉信息，请稍后"));
-    //验证信息
-#ifdef _USER_DRV_API_
-    nCompare = m_userManage.QF_veinVerifyUser(cVeinData, pVein->temp);
-#endif
-    if(0 != nCompare){
-        ui->labelFingerText->setText(tr("指静脉信息不匹配，请重试"));
-        goto ToFingerDisCon;
-    }
-    _FingerProgress(1*_MaxProgressBar);
-    ui->labelFingerText->setText(tr("信息匹配一致"));
-ToFingerDisCon:
-    int nDiscon = m_userManage.QF_disconnectDev();
-    if(0 != nDiscon){
-        ui->labelFingerText->setText(tr("无法断开设备，请重试"));
-        return;
-    }
-    if(curWidget){
-        curWidget->setEnabled(true);
-    }
+    _FingerProgress(_MaxProgressBar*0.1);
+    ui->labelFingerText->setText(tr("正在验证信息"));
 }
 
 void MainWindow::onSetActionClicked(int buttonId)
@@ -707,72 +442,35 @@ void MainWindow::onSetLanguageClicked(int buttonId)
 
 void MainWindow::onTimeOutOperation()
 {
-    unsigned int nLastTime = m_pTimerOperation->property("time").toInt();
-    unsigned int nCurrentTime = QDateTime::currentDateTime().toTime_t();
 
-    if((nCurrentTime - nLastTime) < _NoActionMaxTime) return;
-    int nAction = m_pGroupAction->checkedId();
-    int nRes = -1;
-    switch (nAction) {
-    case 0: nRes = 0; break; //无动作
-    case 1: nRes = m_userManage.QF_lockScreen();
-        break;
-    case 2:
-        nRes = m_userManage.QF_logout();
-        break;
-    case 3: nRes = m_userManage.QF_reboot();
-        break;
-    case 4: nRes = m_userManage.QF_halt();
-        break;
-    default:
-        break;
-    }
-    if(0> nRes){
-        qDebug()<<"操作执行失败";
-    }
 }
 
 void MainWindow::onTimeOutDeviceOffline()
 {
-    int nActionSet = SetConfig::getSetValue(_ActionSet, ActionLockScreen).toInt();
-    int nRes = -1;
-    switch (nActionSet) {
-    case ActionNone:
-        break;
-    case ActionLockScreen: nRes = m_userManage.QF_lockScreen();
-        break;
-    case ActionLogout: nRes = m_userManage.QF_logout();
-        break;
-    case ActionReboot: nRes = m_userManage.QF_reboot();
-        break;
-    case ActionHalt: nRes = m_userManage.QF_halt();
-        break;
-    default:
-        break;
-    }
+
 }
 
 QToolButton *MainWindow::getFingerButton(int index)
 {
-    if(index == ui->btnFinger_1->property(_FingerButtonPropertyName).toInt()){
+    if(index == ui->btnFinger_1->property(_ButtonFingerIndex).toInt()){
         return ui->btnFinger_1;
-    } else if(index == ui->btnFinger_2->property(_FingerButtonPropertyName).toInt()){
+    } else if(index == ui->btnFinger_2->property(_ButtonFingerIndex).toInt()){
         return ui->btnFinger_2;
-    } else if(index == ui->btnFinger_3->property(_FingerButtonPropertyName).toInt()){
+    } else if(index == ui->btnFinger_3->property(_ButtonFingerIndex).toInt()){
         return ui->btnFinger_3;
-    } else if(index == ui->btnFinger_4->property(_FingerButtonPropertyName).toInt()){
+    } else if(index == ui->btnFinger_4->property(_ButtonFingerIndex).toInt()){
         return ui->btnFinger_4;
-    } else if(index == ui->btnFinger_5->property(_FingerButtonPropertyName).toInt()){
+    } else if(index == ui->btnFinger_5->property(_ButtonFingerIndex).toInt()){
         return ui->btnFinger_5;
-    } else if(index == ui->btnFinger_6->property(_FingerButtonPropertyName).toInt()){
+    } else if(index == ui->btnFinger_6->property(_ButtonFingerIndex).toInt()){
         return ui->btnFinger_6;
-    } else if(index == ui->btnFinger_7->property(_FingerButtonPropertyName).toInt()){
+    } else if(index == ui->btnFinger_7->property(_ButtonFingerIndex).toInt()){
         return ui->btnFinger_7;
-    } else if(index == ui->btnFinger_8->property(_FingerButtonPropertyName).toInt()){
+    } else if(index == ui->btnFinger_8->property(_ButtonFingerIndex).toInt()){
         return ui->btnFinger_8;
-    } else if(index == ui->btnFinger_9->property(_FingerButtonPropertyName).toInt()){
+    } else if(index == ui->btnFinger_9->property(_ButtonFingerIndex).toInt()){
         return ui->btnFinger_9;
-    } else if(index == ui->btnFinger_10->property(_FingerButtonPropertyName).toInt()){
+    } else if(index == ui->btnFinger_10->property(_ButtonFingerIndex).toInt()){
         return ui->btnFinger_10;
     }
     return NULL;
@@ -785,12 +483,38 @@ void MainWindow::onUSBDeviceHotPlug(int int1, int int2, int int3)
 
 void MainWindow::enrollCallBack(const QDBusMessage &reply)
 {
-
+    int result;
+    result = reply.arguments()[0].value<int>();
+    qDebug() << "Enroll result: " << result;
+    switch(result) {
+    case DBUS_RESULT_SUCCESS: { /* 录入成功 */
+        ui->labelFingerText->setText(tr("录入成功"));
+        _FingerProgress(1*_MaxProgressBar);
+        showVeinCompareWidget(m_pCurrenFingerButton);
+        setButtonFingerInfo(m_pCurrenFingerButton, true);
+        break;
+    }
+    default:
+        ui->labelFingerText->setText(tr("录入失败")+" "+handleErrorResult(result));
+        break;
+    }
 }
 
 void MainWindow::verifyCallBack(const QDBusMessage &reply)
 {
+    int result;
+    result = reply.arguments()[0].value<int>();
 
+    if(result >= 0) {
+        ui->labelFingerText->setText(tr("验证成功"));
+        _FingerProgress(1*_MaxProgressBar);
+    } else if(result == DBUS_RESULT_NOTMATCH) {
+        ui->labelFingerText->setText(tr("验证失败，不匹配"));
+        _FingerProgress(0.5*_MaxProgressBar);
+    } else {
+        ui->labelFingerText->setText(tr("验证失败")+" "+handleErrorResult(result));
+        _FingerProgress(0.5*_MaxProgressBar);
+    }
 }
 
 void MainWindow::searchCallBack(const QDBusMessage &reply)
@@ -831,10 +555,9 @@ void MainWindow::showFeaturesCallback(QDBusMessage callbackReply)
         //指静脉信息绑定到界面按钮
         QToolButton* pCurrentButton = getFingerButton(featureInfo->index);
         if(pCurrentButton){
-            pCurrentButton->setProperty(_FingerButtonIsInfo, true);
-            pCurrentButton->setStyleSheet(_FingerStyleButton);
-            QToolButton* pBloodButton = pCurrentButton->property(_ButtonPropertyName).value<QToolButton*>();
-            if(pBloodButton) pBloodButton->setVisible(true);
+            setButtonFingerInfo(pCurrentButton, true);
+        } else {
+            setButtonFingerInfo(pCurrentButton, false);
         }
     }
 }
@@ -846,33 +569,19 @@ void MainWindow::initFingerData(QToolButton *button, int index)
 
 void MainWindow::uninitFingerData()
 {
-    QList<StVein*> list = m_mapButtonFinger.values();
-    foreach(StVein* vein, list){
-        if(NULL == vein) continue;
-        delete vein;
-        vein = NULL;
-    }
-    m_mapButtonFinger.clear();
+
 }
 
-QToolButton* MainWindow::bindButtonFinger(StVein vein)
+//绑定手指指静脉信息
+//pBtnFinger 手指按钮
+//index 指静脉信息id
+//pBtnBlood 手指上图片
+void MainWindow::bindButtonFinger(QToolButton* pBtnFinger, int index, QToolButton *pBtnBlood)
 {
-    //通过map遍历一遍绑定的按钮与数据,根据id匹配
-    QList<QToolButton*> listKeys = m_mapButtonFinger.keys();
-    foreach (QToolButton* button, listKeys) {
-        StVein* pVein = m_mapButtonFinger[button];
-        if(NULL == pVein) continue;
-        if(pVein->fg_id != vein.fg_id) continue;
-        pVein->fg_id = vein.fg_id;
-        pVein->user_id = vein.user_id;
-        pVein->vein_id = vein.vein_id;
-        pVein->null_id = vein.null_id;
-#ifdef _USER_DRV_API_
-        strcpy(pVein->temp, vein.temp);
-#endif
-        return button;
-    }
-    return NULL;
+    if(pBtnFinger == NULL || pBtnBlood == NULL) return;
+    pBtnFinger->setProperty(_ButtonFingerIndex, index);
+    _BindFingerBloodButton(pBtnFinger, pBtnBlood);
+    connect(pBtnFinger, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
 }
 
 //显示录入指静脉信息界面
@@ -899,4 +608,42 @@ void MainWindow::showVeinCompareWidget(QToolButton *button)
 
     m_pCurrenFingerButton = button;
     ui->stackedWidget->setCurrentIndex(EnCreateUserWidgetIndex);
+}
+
+QString MainWindow::handleErrorResult(int error)
+{
+    switch(error) {
+    case DBUS_RESULT_ERROR: {
+        //操作失败，需要进一步获取失败原因
+        //QDBusMessage msg = serviceInterface->call("GetOpsMesg", deviceId);
+        //if(msg.type() == QDBusMessage::ErrorMessage){
+            //qDebug() << "UpdateStatus error: " << msg.errorMessage();
+            //return "接口错误";
+        //}
+        break;
+    }
+    case DBUS_RESULT_DEVICEBUSY:
+        return "设备忙";
+        break;
+    case DBUS_RESULT_NOSUCHDEVICE:
+        return tr("设备不存在");
+        break;
+    case DBUS_RESULT_PERMISSIONDENIED:
+        return tr("没有权限");
+        break;
+    }
+    return tr("未知错误");
+}
+
+void MainWindow::setButtonFingerInfo(QToolButton* pButton, bool bInfo)
+{
+    if(NULL == pButton) return;
+    pButton->setProperty(_FingerButtonIsInfo, bInfo);
+    QToolButton* pBtnBlood = pButton->property(_ButtonPropertyName).value<QToolButton*>();
+    if(pBtnBlood) pBtnBlood->setVisible(bInfo);
+    if(bInfo){
+        pButton->setStyleSheet(_FingerStyleButton);
+    } else {
+        pButton->setStyleSheet(_ButtonFingerNoDataStytle);
+    }
 }

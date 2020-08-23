@@ -81,9 +81,9 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
     <widget class="QToolButton" name="btnTitleSet">
      <property name="geometry">
       <rect>
-       <x>580</x>
+       <x>550</x>
        <y>16</y>
-       <width>58</width>
+       <width>71</width>
        <height>24</height>
       </rect>
      </property>
@@ -126,9 +126,9 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
     <widget class="QToolButton" name="btnTitleAbout">
      <property name="geometry">
       <rect>
-       <x>680</x>
+       <x>670</x>
        <y>16</y>
-       <width>58</width>
+       <width>61</width>
        <height>24</height>
       </rect>
      </property>
@@ -150,9 +150,9 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
     <widget class="QToolButton" name="btnTitleHelp">
      <property name="geometry">
       <rect>
-       <x>630</x>
+       <x>610</x>
        <y>16</y>
-       <width>58</width>
+       <width>71</width>
        <height>24</height>
       </rect>
      </property>

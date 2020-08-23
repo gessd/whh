@@ -7,30 +7,14 @@
 #include <QtGui/QKeyEvent>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QListWidgetItem>
+#include <QtWidgets/QToolButton>
 #include <QtGui/QMovie>
-#include "usermanage.h"
 
 #include "customtype.h"
 
 namespace Ui {
 class MainWindow;
 }
-
-struct StFingerData
-{
-    QToolButton* pBtton;
-    StVein stData;
-    StFingerData(){
-        pBtton = NULL;
-        stData.fg_id = 0;
-        stData.user_id = 0;
-        stData.vein_id = 0;
-        stData.null_id = 0;
-#ifdef _USER_DRV_API_
-        memset(stData.temp, 0, sizeof(stData.temp));
-#endif
-    }
-};
 
 //重启软件
 static const int RETCODE_RESTART = 2020;
@@ -44,7 +28,7 @@ public:
     ~MainWindow();
     int sysInit();
     void sysUnInit();
-    void showUserName();
+    void showFingerInfo();
 protected:
     void closeEvent(QCloseEvent *event);
     void keyPressEvent(QKeyEvent *event);
@@ -95,11 +79,16 @@ private slots:
     //麒麟系统
     QToolButton* getFingerButton(int index);
     void onUSBDeviceHotPlug(int int1, int int2, int int3);
+    //录入回调
     void enrollCallBack(const QDBusMessage &reply);
+    //验证回调
     void verifyCallBack(const QDBusMessage &reply);
+    //搜索回调
     void searchCallBack(const QDBusMessage &reply);
     void StopOpsCallBack(const QDBusMessage &reply);
+    //错误信息
     void errorCallBack(const QDBusError &error);
+    //获取列表时错误信息
     void errorCallback(QDBusError error);
     //指静脉信息列表
     void showFeaturesCallback(QDBusMessage callbackReply);
@@ -108,40 +97,35 @@ private:
     void initFingerData(QToolButton* button, int index);
     void uninitFingerData();
     //绑定手指指静脉信息
-    QToolButton* bindButtonFinger(StVein vein);
+    void bindButtonFinger(QToolButton* pBtnFinger, int index, QToolButton *pBtnBlood);
     //显示录入指静脉信息界面
     void showVeinAddWidget(QToolButton* button);
     //显示验证指静脉信息界面
     void showVeinCompareWidget(QToolButton* button);
+    //获取错误信息
+    QString handleErrorResult(int error);
+    //设置按钮是否有指静脉信息
+    void setButtonFingerInfo(QToolButton* pButton, bool bInfo);
 private:
     Ui::MainWindow *ui;
-    UserManage m_userManage;
-    //CreateUserDialog* m_pUserDialog;
     //系统通知使用
     QSystemTrayIcon *m_pTrayIcon;
     //自定义菜单
     QMenu *m_pTrayIconMenu;
     QAction *m_pQuitAction;
     QAction *m_pShowAction;
-    QTimer* m_pTimer;
-
-    QMap<QToolButton*, StVein*> m_mapButtonFinger; //手指按钮与指静脉信息对应关系
     QToolButton* m_pCurrenFingerButton; //当前手指按钮,指静脉信息管理使用
     QButtonGroup* m_pGroupAction;
     QButtonGroup* m_pGroupLanguage;
-    //用户信息
-    StUser m_stUserData;
     QMovie* m_pMovieFinger;
-    QTimer* m_pTimerOperation;
-
 
     /* 用于和远端 DBus 对象交互的代理接口 */
     QDBusInterface *serviceInterface;
     int deviceCount;
     //设备类型与设备信息
     QMap<int, QList<DeviceInfo *>> deviceInfosMap;
-    //测试用 指静脉设备信息
-    DeviceInfo* m_pFingerVeinDeviceINfo;
+    //指静脉设备信息
+    DeviceInfo* m_pFingerVeinDeviceInfo;
 };
 
 #endif // MAINWINDOW_H
