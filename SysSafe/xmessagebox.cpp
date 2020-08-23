@@ -82,7 +82,7 @@ bool XMessageBox::eventFilter(QObject * watched, QEvent * event)
 	else if (event->type() == QEvent::MouseMove) {
 		QMouseEvent *mouseEvent = (QMouseEvent *)event;
 		if (m_bMousePressed) {
-			move(mouseEvent->globalPos() - m_pointMouse);
+            //move(mouseEvent->globalPos() - m_pointMouse);
 		}
 		return true;
 	}

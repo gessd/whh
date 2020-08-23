@@ -3,7 +3,7 @@
 #include <QtCore/QThread>
 
 //测试接口使用，正式版本去掉此定义
-#define _InterfaceDebug_
+//#define _InterfaceDebug_
 
 //方便调试接口库，正式版本需要此定义
 #ifdef _USER_DRV_API_

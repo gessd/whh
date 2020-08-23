@@ -103,11 +103,11 @@ MainWindow::MainWindow(QWidget *parent) :
     _BindFingerBloodButton(ui->btnFinger_10, ui->btnBlood_10);
 
     m_pGroupAction = new QButtonGroup(this);
-    m_pGroupAction->addButton(ui->radioButton_none, 0);
-    m_pGroupAction->addButton(ui->radioButton_lockScreen, 1);
-    m_pGroupAction->addButton(ui->radioButton_logout, 2);
-    m_pGroupAction->addButton(ui->radioButton_reboot, 3);
-    m_pGroupAction->addButton(ui->radioButton_halt, 4);
+    m_pGroupAction->addButton(ui->radioButton_none, ActionNone);
+    m_pGroupAction->addButton(ui->radioButton_lockScreen, ActionLockScreen);
+    m_pGroupAction->addButton(ui->radioButton_logout, ActionLogout);
+    m_pGroupAction->addButton(ui->radioButton_reboot, ActionReboot);
+    m_pGroupAction->addButton(ui->radioButton_halt, ActionHalt);
     connect(m_pGroupAction, SIGNAL(buttonClicked(int)), this, SLOT(onSetActionClicked(int)));
 
     m_pGroupLanguage = new QButtonGroup(this);
@@ -281,7 +281,7 @@ void MainWindow::onTimeOut()
 
 void MainWindow::onBtnTitleSet()
 {
-    int nActionSet = SetConfig::getSetValue(_ActionSet, 0).toInt();
+    int nActionSet = SetConfig::getSetValue(_ActionSet, ActionLockScreen).toInt();
     int nLanguSet = SetConfig::getSetValue(_LanguageSet, 0).toInt();
     QAbstractButton* pBtnAction = m_pGroupAction->button(nActionSet);
     if(pBtnAction) pBtnAction->setChecked(true);
@@ -395,6 +395,11 @@ void MainWindow::onBtnLogonClicked()
     ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
     ui->lineEditPass->clear();
     ui->labelPassMassage->clear();
+
+    //设置设备最长离线时间
+    unsigned int nTimeOut = SetConfig::getSetValue(_MaxTimeOutDeviceOffline, 60).toInt();
+    if(0 == nTimeOut) nTimeOut = 60;
+    m_userManage.setDeviceOfflineTimeOut(nTimeOut);
 }
 
 void MainWindow::onItemClicked(QListWidgetItem *item)
@@ -667,7 +672,22 @@ void MainWindow::onTimeOutOperation()
 
 void MainWindow::onTimeOutDeviceOffline()
 {
-
+    int nActionSet = SetConfig::getSetValue(_ActionSet, ActionLockScreen).toInt();
+    int nRes = -1;
+    switch (nActionSet) {
+    case ActionNone:
+        break;
+    case ActionLockScreen: nRes = m_userManage.QF_lockScreen();
+        break;
+    case ActionLogout: nRes = m_userManage.QF_logout();
+        break;
+    case ActionReboot: nRes = m_userManage.QF_reboot();
+        break;
+    case ActionHalt: nRes = m_userManage.QF_halt();
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWindow::initFingerData(QToolButton *button, int index)

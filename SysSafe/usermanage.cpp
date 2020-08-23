@@ -13,6 +13,7 @@ UserManage::UserManage(QObject *parent) : QObject(parent)
     m_pParam = new _StFunParamAndRes;
     m_pUserThread = new ContorllThread;
     m_pTimerCheckDevice = new QTimer(this);
+    connect(m_pTimerCheckDevice, SIGNAL(timeout()), this, SLOT(onTimeOutCheckDecie()));
 }
 
 UserManage::~UserManage()
@@ -315,7 +316,7 @@ void UserManage::setDeviceOfflineTimeOut(unsigned int nTimeOut)
 {
     if(0 == nTimeOut) nTimeOut = 1;
     m_stDeviceStatus.nMaxDeviceOfflineTime = nTimeOut;
-    m_pTimerCheckDevice->start(60*1000);
+    m_pTimerCheckDevice->start(30*1000);
 }
 
 bool UserManage::isDeviceUseIng()

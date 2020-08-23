@@ -40,4 +40,14 @@
 //无动作时间 秒
 #define _NoActionMaxTime 60*60
 
+//设备离线时动作ID
+enum _ActionDeviceOffline
+{
+    ActionNone=0,
+    ActionLockScreen,
+    ActionLogout,
+    ActionReboot,
+    ActionHalt
+};
+
 #endif // _STYLEDEFINE_H_
