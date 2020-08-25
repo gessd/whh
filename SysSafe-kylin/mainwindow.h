@@ -78,7 +78,10 @@ private slots:
 
     //麒麟系统
     QToolButton* getFingerButton(int index);
-    void onUSBDeviceHotPlug(int int1, int int2, int int3);
+    //USB
+    void onUSBDeviceHotPlug(int drvid, int action, int devNumNow);
+    //设备
+    void onStatusChanged(int drvId, int statusType);
     //录入回调
     void enrollCallBack(const QDBusMessage &reply);
     //验证回调
@@ -122,8 +125,6 @@ private:
     /* 用于和远端 DBus 对象交互的代理接口 */
     QDBusInterface *serviceInterface;
     int deviceCount;
-    //设备类型与设备信息
-    QMap<int, QList<DeviceInfo *>> deviceInfosMap;
     //指静脉设备信息
     DeviceInfo* m_pFingerVeinDeviceInfo;
 };

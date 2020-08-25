@@ -52,8 +52,10 @@ enum _ActionDeviceOffline
 
 
 //kylin sys
-//设备名称 不可变，判断是否是程序要用的设备
+//设备名称
 #define _DeviceName_ "df100"
+//设备ID 不可变，判断是否是程序要用的设备
+#define _DeviceId_ 123
 
 //指静脉信息起始ID
 #define _FingerStartIndex 1000

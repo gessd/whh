@@ -15,8 +15,7 @@
 
 enum EnWidgetIndex
 {
-    EnLoginWidgetIndex = 0,
-    EnMainWidgetIndex,
+    EnMainWidgetIndex=0,
     EnCreateUserWidgetIndex,
     EnSysSetWidgetIndex
 };
@@ -29,7 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //暂时不需要菜单栏及状态栏
     ui->btnTitleSet->setVisible(false);
-    ui->labelPassMassage->clear();
     m_pCurrenFingerButton = NULL;
     //去掉最大化与最小号窗口
     setWindowFlags(Qt::WindowMinMaxButtonsHint);
@@ -70,9 +68,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->btnSetBack, SIGNAL(clicked()), this, SLOT(onBtnBackMainClicked()));
     connect(ui->btnFingerBack, SIGNAL(clicked()), this, SLOT(onBtnBackMainClicked()));
     connect(ui->stackedWidget, SIGNAL(currentChanged(int)), this, SLOT(onMainWidgetCurrentChanged(int)));
-    connect(ui->btnLogon, SIGNAL(clicked()), this, SLOT(onBtnLogonClicked()));
-    connect(ui->lineEditPass, SIGNAL(returnPressed()), this, SLOT(onBtnLogonClicked()));
-    connect(ui->btnSetPass, SIGNAL(clicked()), this, SLOT(onBtnSetUserPass()));
     connect(ui->btnFingerRemove, SIGNAL(clicked()), this, SLOT(onBtnFingerRemoveClicked()));
     connect(ui->btnAddVein, SIGNAL(clicked()), this, SLOT(onBtnAddVeinClicked()));
     connect(ui->btnFingerCheck, SIGNAL(clicked()), this, SLOT(onBtnFingerChecked()));
@@ -94,8 +89,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pGroupLanguage->addButton(ui->radioButton_mw, 3);
     connect(m_pGroupLanguage, SIGNAL(buttonClicked(int)), this, SLOT(onSetLanguageClicked(int)));
 
-    ui->btnLogon->setVisible(false);
-    ui->btnSetPass->setVisible(false);
     ui->progressBarFinger->setMaximum(_MaxProgressBar);
     m_pMovieFinger = new QMovie(":/images/fingermovie.gif");
     ui->labelMovieFinger->setMovie(m_pMovieFinger);
@@ -123,10 +116,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(serviceInterface, SIGNAL(USBDeviceHotPlug(int, int, int)),
             this, SLOT(onUSBDeviceHotPlug(int,int,int)));
+    connect(serviceInterface, SIGNAL(StatusChanged(int,int)),
+            this, SLOT(onStatusChanged(int,int)));
 
     //注册自定义数据类型
     registerCustomTypes();
 
+    ui->labelDeviceStatus->setVisible(false);
     bindButtonFinger(ui->btnFinger_1, _FingerStartIndex+1, ui->btnBlood_1);
     bindButtonFinger(ui->btnFinger_2, _FingerStartIndex+2, ui->btnBlood_2);
     bindButtonFinger(ui->btnFinger_3, _FingerStartIndex+3, ui->btnBlood_3);
@@ -169,9 +165,6 @@ int MainWindow::sysInit()
     argument = variant.value<QDBusArgument>(); /* 解封装，获取QDBusArgument对象 */
     argument >> qlist; /* 使用运算符重载提取 argument 对象里面存储的列表对象 */
 
-    for(int i = 0; i < __MAX_NR_BIOTYPES; i++)
-        deviceInfosMap[i].clear();;
-
     for (int i = 0; i < deviceCount; i++) {
         item = qlist[i]; /* 取出一个元素 */
         variant = item.variant(); /* 转为普通QVariant对象 */
@@ -181,14 +174,19 @@ int MainWindow::sysInit()
         argument >> *deviceInfo; /* 提取最终的 DeviceInfo 结构体 */
 
         if(BIOTYPE_FINGERVEIN == deviceInfo->biotype){
-            if(_DeviceName_ == deviceInfo->device_shortname){
+            if(_DeviceId_ == deviceInfo->device_id){
                 qDebug()<<"---device "<<i<<deviceInfo<<deviceInfo->device_id<<
                           deviceInfo->device_shortname<<deviceInfo->device_fullname<<deviceInfo->biotype;
                 m_pFingerVeinDeviceInfo = deviceInfo;
             }
         }
     }
-    if(NULL == m_pFingerVeinDeviceInfo) return -1;
+    //无设备或设备被禁用
+    if(NULL == m_pFingerVeinDeviceInfo || m_pFingerVeinDeviceInfo->driver_enable <= 0) {
+        ui->labelDeviceStatus->setVisible(true);
+        ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(false);
+        ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
+    }
     return 0;
 }
 
@@ -376,8 +374,8 @@ void MainWindow::onBtnAddVeinClicked()
     QList<QVariant> args;
     args << drvId << uid << idx << idxName;
     bool bCall = serviceInterface->callWithCallback("Enroll", args, this,
-                        SLOT(enrollCallBack(const QDBusMessage &)),
-                        SLOT(errorCallBack(const QDBusError &)));
+                                                    SLOT(enrollCallBack(const QDBusMessage &)),
+                                                    SLOT(errorCallBack(const QDBusError &)));
     if(false == bCall) {
         ui->labelFingerText->setText(tr("录入操作错误"));
         return;
@@ -415,8 +413,8 @@ void MainWindow::onBtnFingerChecked()
     args << drvId << uid << idx;
 
     bool bCall = serviceInterface->callWithCallback("Verify", args, this,
-                        SLOT(verifyCallBack(const QDBusMessage &)),
-                        SLOT(errorCallBack(const QDBusError &)));
+                                                    SLOT(verifyCallBack(const QDBusMessage &)),
+                                                    SLOT(errorCallBack(const QDBusError &)));
     if(false == bCall) {
         ui->labelFingerText->setText(tr("验证操作错误"));
         return;
@@ -476,9 +474,23 @@ QToolButton *MainWindow::getFingerButton(int index)
     return NULL;
 }
 
-void MainWindow::onUSBDeviceHotPlug(int int1, int int2, int int3)
+void MainWindow::onUSBDeviceHotPlug(int drvid, int action, int devNumNow)
 {
+    if(_DeviceId_ != drvid) return;
+}
 
+void MainWindow::onStatusChanged(int drvId, int statusType)
+{
+    if(_DeviceId_ != drvId) return;
+    if(3 == statusType) {
+        //设备被禁用
+        ui->labelDeviceStatus->setVisible(true);
+        ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(false);
+        ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
+    } else {
+        ui->labelDeviceStatus->setVisible(false);
+        ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(true);
+    }
 }
 
 void MainWindow::enrollCallBack(const QDBusMessage &reply)
@@ -617,8 +629,8 @@ QString MainWindow::handleErrorResult(int error)
         //操作失败，需要进一步获取失败原因
         //QDBusMessage msg = serviceInterface->call("GetOpsMesg", deviceId);
         //if(msg.type() == QDBusMessage::ErrorMessage){
-            //qDebug() << "UpdateStatus error: " << msg.errorMessage();
-            //return "接口错误";
+        //qDebug() << "UpdateStatus error: " << msg.errorMessage();
+        //return "接口错误";
         //}
         break;
     }
