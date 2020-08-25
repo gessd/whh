@@ -2,6 +2,8 @@
 *.user
 doc/
 build-*
+*.zip
+qt-*
 
 # Build and Object Folders  
 bin/  
