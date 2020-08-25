@@ -590,7 +590,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
         <x>420</x>
         <y>40</y>
         <width>291</width>
-        <height>31</height>
+        <height>41</height>
        </rect>
       </property>
       <property name="text">

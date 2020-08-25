@@ -182,7 +182,7 @@ int MainWindow::sysInit()
         }
     }
     //无设备或设备被禁用
-    if(NULL == m_pFingerVeinDeviceInfo || m_pFingerVeinDeviceInfo->driver_enable <= 0) {
+    if(NULL == m_pFingerVeinDeviceInfo || m_pFingerVeinDeviceInfo->driver_enable <= 0 || m_pFingerVeinDeviceInfo->device_available <=0) {
         ui->labelDeviceStatus->setVisible(true);
         ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(false);
         ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
@@ -196,6 +196,7 @@ void MainWindow::sysUnInit()
 
 void MainWindow::showFingerInfo()
 {
+    ui->btnTitleSet->setVisible(true);
     ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
 
     //获取已录入指静脉信息
@@ -477,6 +478,14 @@ QToolButton *MainWindow::getFingerButton(int index)
 void MainWindow::onUSBDeviceHotPlug(int drvid, int action, int devNumNow)
 {
     if(_DeviceId_ != drvid) return;
+    if(action <=0 || devNumNow <= 0){
+        ui->labelDeviceStatus->setVisible(true);
+        ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(false);
+        ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
+    } else {
+        ui->labelDeviceStatus->setVisible(false);
+        ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(true);
+    }
 }
 
 void MainWindow::onStatusChanged(int drvId, int statusType)
