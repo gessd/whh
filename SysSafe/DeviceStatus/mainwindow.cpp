@@ -77,8 +77,3 @@ void MainWindow::onShowWindow()
 {
 
 }
-
-void MainWindow::onCloseWindow()
-{
-
-}
