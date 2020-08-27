@@ -50,4 +50,6 @@ enum _ActionDeviceOffline
     ActionHalt
 };
 
+#define _TcpPort_ 225533
+
 #endif // _STYLEDEFINE_H_

@@ -4,6 +4,7 @@ doc/
 build-*
 *.zip
 qt-*
+Examples/
 
 # Build and Object Folders  
 bin/  

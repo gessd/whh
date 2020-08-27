@@ -5,6 +5,8 @@
 #include <QTimer>
 #include <QSettings>
 #include <QSystemTrayIcon>
+#include <QTcpSocket>
+#include <QTcpServer>
 #include "dfcx_common.h"
 #include "dfcx_drv.h"
 
@@ -27,6 +29,11 @@ private slots:
     void onTimeOut();
     //显示窗口
     void onShowWindow();
+    //关闭窗口
+    void onCloseWindow();
+    void onNewConnection();
+    void onClientUpdateStatus();
+    void onClientReadMessage();
 private:
     Ui::MainWindow *ui;
     bool m_bInit;
@@ -37,6 +44,8 @@ private:
     QMenu *m_pTrayIconMenu;
     QAction *m_pQuitAction;
     QAction *m_pShowAction;
+    QTcpServer* m_pTcpServer;
+    QTcpSocket* m_pTcpClient;
 };
 
 #endif // MAINWINDOW_H
