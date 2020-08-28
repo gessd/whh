@@ -14,9 +14,6 @@ UserManage::UserManage(QObject *parent) : QObject(parent)
     m_pUserThread = new ContorllThread;
     m_pTimerCheckDevice = new QTimer(this);
     connect(m_pTimerCheckDevice, SIGNAL(timeout()), this, SLOT(onTimeOutCheckDecie()));
-
-    m_pTcpClient = new QTcpSocket(this);
-    connect(m_pTcpClient, SIGNAL(readyRead()), this, SLOT(onReadMessage()));
 }
 
 UserManage::~UserManage()
@@ -51,8 +48,6 @@ bool UserManage::isInit()
 
 int UserManage::QF_init()
 {
-    m_pTcpClient->connectToHost(_TcpIp_, _TcpPort_);
-
     _StFunParamAndRes param;
     param.type = ft_init;
     waitThreadRunFinish(param);
@@ -73,7 +68,8 @@ int UserManage::QF_connectDev()
     param.type = ft_connectDev;
     waitThreadRunFinish(param);
     if(0 == param.nResult){
-        if(m_pTcpClient) m_pTcpClient->write(_DeviceUseing);
+        m_stDeviceStatus.bUseint = true;
+        m_stDeviceStatus.nLastTime = QDateTime::currentDateTime().toTime_t();
     }
     return param.nResult;
 }
@@ -84,7 +80,8 @@ int UserManage::QF_disconnectDev()
     param.type = ft_disconnectDev;
     waitThreadRunFinish(param);
     if(0 == param.nResult){
-        if(m_pTcpClient) m_pTcpClient->write(_DeviceNotUse);
+        m_stDeviceStatus.bUseint = false;
+        m_stDeviceStatus.nLastTime = QDateTime::currentDateTime().toTime_t();
     }
     return param.nResult;
 }
@@ -340,17 +337,6 @@ void UserManage::onTimeOutCheckDecie()
     unsigned int nMaxTime = SetConfig::getSetValue(_MaxTimeOutDeviceOffline, 0).toUInt();
     if((nCurrentTime-m_stDeviceStatus.nLastTime)>nMaxTime){
         emit timeOutDeviceOffline();
-    }
-}
-
-void UserManage::onReadMessage()
-{
-    QByteArray data = m_pTcpClient->readAll();
-    if(data.isEmpty()) return;
-    if(_ShowWindow == data){
-        emit sigShowWindow();
-    } else if(_CloseWindow == data){
-        emit sigCloseWindow();
     }
 }
 

@@ -6,7 +6,6 @@
 #include <QtCore/QUuid>
 #include <QtCore/QTimer>
 #include <QtWidgets/QToolButton>
-#include <QtNetwork/QTcpSocket>
 #include "contorllthread.h"
 
 struct StDeviceStatus
@@ -181,11 +180,8 @@ public:
       unsigned int getLastTimeUseDevice();
 private slots:
       void onTimeOutCheckDecie();
-      void onReadMessage();
 signals:
       void timeOutDeviceOffline();
-      void sigShowWindow();
-      void sigCloseWindow();
 private:
       void waitThreadRunFinish(_StFunParamAndRes& param, unsigned int timeout = 10);
 private:
@@ -197,7 +193,6 @@ private:
     QTimer* m_pTimerCheckDevice;
     //设备状态
     StDeviceStatus m_stDeviceStatus;
-    QTcpSocket* m_pTcpClient;
 };
 
 #endif // USERMANAGE_H

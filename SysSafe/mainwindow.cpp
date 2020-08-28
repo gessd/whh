@@ -146,8 +146,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onTimeOut()));
     m_pTimer->start(60*1000);
 
-    connect(&m_userManage, SIGNAL(sigShowWindow()), this, SLOT(onShowWindow()));
-    connect(&m_userManage, SIGNAL(sigCloseWindow()), this, SLOT(close()));
+    connect(&m_userManage, SIGNAL(timeOutDeviceOffline()), this, SLOT(onTimeOutDeviceOffline()));
 }
 
 

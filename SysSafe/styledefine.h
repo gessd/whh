@@ -50,11 +50,4 @@ enum _ActionDeviceOffline
     ActionHalt
 };
 
-#define _TcpIp_ "127.0.0.1"
-#define _TcpPort_ 225533
-#define _ShowWindow "show"
-#define _CloseWindow "close"
-#define _DeviceUseing "useing"
-#define _DeviceNotUse "notuse"
-
 #endif // _STYLEDEFINE_H_
