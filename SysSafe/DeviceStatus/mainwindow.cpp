@@ -34,8 +34,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_pQuitAction, SIGNAL(triggered()), this, SLOT(onCloseWindow()));
     connect(m_pShowAction, SIGNAL(triggered()), this, SLOT(onShowWindow()));
 
-    m_pTcpClient = NULL;
-    m_pTcpServer = new QTcpServer(this);
+    m_pLocalClient = NULL;
+    m_pLocalServer = new QLocalServer(this);
 }
 
 MainWindow::~MainWindow()
@@ -49,7 +49,7 @@ bool MainWindow::startCheckDevice()
     m_pTimerDevice->start(10*1000);
 
     //启动服务监控端口
-    if(false == m_pTcpServer->listen(QHostAddress::Any, _TcpPort_)){
+    if(false == m_pLocalServer->listen(_LocasServerName_)){
         return false;
     }
 
@@ -59,7 +59,7 @@ bool MainWindow::startCheckDevice()
         return false;
     }
 
-    connect (m_pTcpServer, SIGNAL(newConnection()),this, SLOT(updateStatus()));//有新客户连接
+    connect (m_pLocalServer, SIGNAL(newConnection()),this, SLOT(onClientUpdateStatus()));//有新客户连接
     //m_pTimerDevice->start(10*1000);
     m_bInit = true;
     return true;
@@ -95,8 +95,8 @@ void MainWindow::onTimeOut()
 
 void MainWindow::onShowWindow()
 {
-    if(m_pTcpClient){
-        m_pTcpClient->write("close");
+    if(m_pLocalClient){
+        m_pLocalClient->write("close");
     } else {
         //未连接，需要先启动主程序
         QProcess pro;
@@ -106,27 +106,27 @@ void MainWindow::onShowWindow()
 
 void MainWindow::onCloseWindow()
 {
-    if(m_pTcpClient) m_pTcpClient->write("close");
+    if(m_pLocalClient) m_pLocalClient->write("close");
     close();
 }
 
 void MainWindow::onNewConnection()
 {
-    if(m_pTcpClient) return;
-    m_pTcpClient = m_pTcpServer->nextPendingConnection();
-    connect(m_pTcpClient, SIGNAL(disconnected()), this, SLOT(onClientUpdateStatus()));
-    connect(m_pTcpClient, SIGNAL(readyRead()), this, SLOT(onClientReadMessage()));
+    if(m_pLocalClient) return;
+    m_pLocalClient = m_pLocalServer->nextPendingConnection();
+    connect(m_pLocalClient, SIGNAL(disconnected()), this, SLOT(onClientUpdateStatus()));
+    connect(m_pLocalClient, SIGNAL(readyRead()), this, SLOT(onClientReadMessage()));
 }
 
 void MainWindow::onClientUpdateStatus()
 {
-    disconnect(m_pTcpClient, SIGNAL(disconnected()), this, SLOT(onClientUpdateStatus()));
-    disconnect(m_pTcpClient, SIGNAL(readyRead()), this, SLOT(onClientReadMessage()));
-    m_pTcpClient = NULL;
+    disconnect(m_pLocalClient, SIGNAL(disconnected()), this, SLOT(onClientUpdateStatus()));
+    disconnect(m_pLocalClient, SIGNAL(readyRead()), this, SLOT(onClientReadMessage()));
+    m_pLocalClient = NULL;
 }
 
 void MainWindow::onClientReadMessage()
 {
-    if(NULL == m_pTcpClient) return;
-    QByteArray data = m_pTcpClient->readAll();
+    if(NULL == m_pLocalClient) return;
+    QByteArray data = m_pLocalClient->readAll();
 }

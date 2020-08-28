@@ -5,8 +5,8 @@
 #include <QTimer>
 #include <QSettings>
 #include <QSystemTrayIcon>
-#include <QTcpSocket>
-#include <QTcpServer>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include "dfcx_common.h"
 #include "dfcx_drv.h"
 
@@ -14,7 +14,7 @@ namespace Ui {
 class MainWindow;
 }
 
-
+#define _LocasServerName_ "syssafedevicecheck"
 
 class MainWindow : public QMainWindow
 {
@@ -44,8 +44,8 @@ private:
     QMenu *m_pTrayIconMenu;
     QAction *m_pQuitAction;
     QAction *m_pShowAction;
-    QTcpServer* m_pTcpServer;
-    QTcpSocket* m_pTcpClient;
+    QLocalServer* m_pLocalServer;
+    QLocalSocket* m_pLocalClient;
 };
 
 #endif // MAINWINDOW_H
