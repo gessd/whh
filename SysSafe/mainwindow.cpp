@@ -741,7 +741,7 @@ void MainWindow::showVeinAddWidget(QToolButton *button)
     ui->btnFingerCheck->setVisible(false);
     ui->btnAddVein->setVisible(true);
     _FingerProgress(0*_MaxProgressBar);
-
+    ui->labelMessage->setText(tr("录入"));
     m_pCurrenFingerButton = button;
     ui->stackedWidget->setCurrentIndex(EnCreateUserWidgetIndex);
 }
@@ -754,7 +754,7 @@ void MainWindow::showVeinCompareWidget(QToolButton *button)
     ui->btnFingerCheck->setVisible(true);
     ui->btnAddVein->setVisible(false);
     _FingerProgress(0*_MaxProgressBar);
-
+    ui->labelMessage->setText(tr("验证"));
     m_pCurrenFingerButton = button;
     ui->stackedWidget->setCurrentIndex(EnCreateUserWidgetIndex);
 }
