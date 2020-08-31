@@ -315,8 +315,14 @@ int UserManage::QF_saveVeinTemp(StVein stVein)
 void UserManage::setDeviceOfflineTimeOut(unsigned int nTimeOut)
 {
     if(0 == nTimeOut) nTimeOut = 1;
+    nTimeOut = nTimeOut*60;
+    if(m_stDeviceStatus.nMaxDeviceOfflineTime == nTimeOut) return;
     m_stDeviceStatus.nMaxDeviceOfflineTime = nTimeOut;
-    m_pTimerCheckDevice->start(30*1000);
+    if(m_pTimerCheckDevice->isActive()){
+        m_pTimerCheckDevice->stop();
+        m_stDeviceStatus.nLastTime = 0;
+    }
+    m_pTimerCheckDevice->start(10*1000);
 }
 
 bool UserManage::isDeviceUseIng()
@@ -333,9 +339,10 @@ void UserManage::onTimeOutCheckDecie()
 {
     //先检查设备是否在用状态
     if(m_stDeviceStatus.bUseint) return;
+    if(0 == m_stDeviceStatus.nLastTime) m_stDeviceStatus.nLastTime = QDateTime::currentDateTime().toTime_t();
     unsigned int nCurrentTime = QDateTime::currentDateTime().toTime_t();
-    unsigned int nMaxTime = SetConfig::getSetValue(_MaxTimeOutDeviceOffline, 0).toUInt();
-    if((nCurrentTime-m_stDeviceStatus.nLastTime)>nMaxTime){
+    if((nCurrentTime-m_stDeviceStatus.nLastTime)>=m_stDeviceStatus.nMaxDeviceOfflineTime){
+        m_stDeviceStatus.nLastTime = nCurrentTime;
         emit timeOutDeviceOffline();
     }
 }

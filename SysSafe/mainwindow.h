@@ -83,6 +83,8 @@ private slots:
     void onBtnFingerRemoveClicked();
     //验证指静脉按钮点击
     void onBtnFingerChecked();
+    //设置策略最长时间
+    void onSetMaxTime();
 
     //设置无动作操作
     void onSetActionClicked(int buttonId);

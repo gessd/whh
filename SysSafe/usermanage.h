@@ -165,7 +165,7 @@ public:
 
       /**
        * @brief 设置设备超时时间
-       * @param nTimeOut 秒
+       * @param nTimeOut 分钟
        */
       void setDeviceOfflineTimeOut(unsigned int nTimeOut);
       /**

@@ -142,10 +142,12 @@ MainWindow::MainWindow(QWidget *parent) :
         qss.close();
     }
 
-    m_pTimer = new QTimer(this);
-    connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onTimeOut()));
-    m_pTimer->start(60*1000);
+    //m_pTimer = new QTimer(this);
+    //connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onTimeOut()));
+    //m_pTimer->start(60*1000);
 
+    ui->lineEditMaxTime->setValidator(new QIntValidator(1, 1000, this));
+    connect(ui->lineEditMaxTime, SIGNAL(editingFinished()), this, SLOT(onSetMaxTime()));
     connect(&m_userManage, SIGNAL(timeOutDeviceOffline()), this, SLOT(onTimeOutDeviceOffline()));
 }
 
@@ -397,8 +399,9 @@ void MainWindow::onBtnLogonClicked()
     ui->labelPassMassage->clear();
 
     //设置设备最长离线时间
-    unsigned int nTimeOut = SetConfig::getSetValue(_MaxTimeOutDeviceOffline, 60).toInt();
-    if(0 == nTimeOut) nTimeOut = 60;
+    unsigned int nTimeOut = SetConfig::getSetValue(_MaxTimeOutDeviceOffline, 1).toInt();
+    if(0 == nTimeOut) nTimeOut = 1;
+    ui->lineEditMaxTime->setText(QString::number(nTimeOut));
     m_userManage.setDeviceOfflineTimeOut(nTimeOut);
 }
 
@@ -628,6 +631,14 @@ ToFingerDisCon:
     }
 }
 
+void MainWindow::onSetMaxTime()
+{
+    unsigned int nTime = ui->lineEditMaxTime->text().trimmed().toUInt();
+    if(0 == nTime) nTime = 1;
+    SetConfig::setSetValue(_MaxTimeOutDeviceOffline, nTime);
+    m_userManage.setDeviceOfflineTimeOut(nTime);
+}
+
 void MainWindow::onSetActionClicked(int buttonId)
 {
     SetConfig::setSetValue(_ActionSet, buttonId);
@@ -672,6 +683,11 @@ void MainWindow::onTimeOutOperation()
 
 void MainWindow::onTimeOutDeviceOffline()
 {
+    QString qstrTitle = tr("安全登录");
+    QString qstrMessage = tr("设备不在线，将执行安全策略");//+qstrCurTime;
+    QSystemTrayIcon::MessageIcon icon = QSystemTrayIcon::MessageIcon(QSystemTrayIcon::Warning);
+    QIcon ion = windowIcon();
+    m_pTrayIcon->showMessage(qstrTitle, qstrMessage, icon, 1);
     int nActionSet = SetConfig::getSetValue(_ActionSet, ActionLockScreen).toInt();
     int nRes = -1;
     switch (nActionSet) {

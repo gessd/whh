@@ -182,7 +182,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="loginWidget">
      <widget class="QLabel" name="label">
@@ -948,7 +948,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
          <rect>
           <x>20</x>
           <y>10</y>
-          <width>301</width>
+          <width>411</width>
           <height>51</height>
          </rect>
         </property>
@@ -1031,6 +1031,35 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
          </property>
          <property name="text">
           <string>关机</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="lineEditMaxTime">
+         <property name="geometry">
+          <rect>
+           <x>232</x>
+           <y>20</y>
+           <width>71</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+         <property name="placeholderText">
+          <string>1-1000</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_2">
+         <property name="geometry">
+          <rect>
+           <x>310</x>
+           <y>15</y>
+           <width>161</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>分钟后执行安全策略</string>
          </property>
         </widget>
        </widget>
