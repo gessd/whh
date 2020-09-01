@@ -75,7 +75,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
       </rect>
      </property>
      <property name="text">
-      <string>标题</string>
+      <string>指静脉安全登录系统</string>
      </property>
     </widget>
     <widget class="QToolButton" name="btnTitleSet">

@@ -88,7 +88,8 @@ enum _EnFunctionType
     ft_createVeinTemp,
     ft_veinCompare,
     ft_veinVerifyUser,
-    ft_saveVeinTemp
+    ft_saveVeinTemp,
+    ft_checkOnline
 };
 struct _StFunParamAndRes
 {
@@ -171,6 +172,7 @@ private:
     void thread_veinCompare();
     void thread_veinVerifyUser();
     void thread_saveVeemp();
+    void thread_checkOnline();
 #endif
 private:
     _StFunParamAndRes* m_pFunc;

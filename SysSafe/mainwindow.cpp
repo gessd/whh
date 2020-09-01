@@ -56,7 +56,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_pCurrenFingerButton = NULL;
 
-    QIcon icon(QIcon(":/images/heart.png"));
+    QIcon icon(QIcon(":/images/win.png"));
     m_pTrayIcon->setIcon(icon);
     setWindowIcon(icon);
     m_pTrayIcon->show();

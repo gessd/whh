@@ -62,6 +62,14 @@ void UserManage::QF_unInit()
     waitThreadRunFinish(param);
 }
 
+int UserManage::QF_checkOnline()
+{
+    _StFunParamAndRes param;
+    param.type = ft_checkOnline;
+    waitThreadRunFinish(param);
+    return param.nResult;
+}
+
 int UserManage::QF_connectDev()
 {
     _StFunParamAndRes param;
@@ -354,9 +362,9 @@ void UserManage::onTimeOutCheckDecie()
     //先检查设备是否在用状态
     if(m_stDeviceStatus.bUseint) return;
 
-    int nConDev = QF_connectDev();
-    if(0 == nConDev) {
-        QF_disconnectDev();
+    int nOnline = QF_checkOnline();
+    if(nOnline > 0) {
+        //设备在线直接跳出
         return;
     }
     if(0 == m_stDeviceStatus.nLastTime){

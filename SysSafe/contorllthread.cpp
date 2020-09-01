@@ -51,6 +51,7 @@ void ContorllThread::run()
     case ft_veinCompare:  thread_veinCompare(); break;
     case ft_veinVerifyUser:  thread_veinVerifyUser(); break;
     case ft_saveVeinTemp:  thread_saveVeemp(); break;
+    case ft_checkOnline: thread_checkOnline(); break;
     default:
         break;
     }
@@ -274,5 +275,10 @@ void ContorllThread::thread_saveVeemp()
 {
     //TODO
     //接口未实现
+}
+
+void ContorllThread::thread_checkOnline()
+{
+    m_pFunc->nResult = checkOnline();
 }
 #endif

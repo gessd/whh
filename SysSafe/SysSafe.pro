@@ -16,10 +16,12 @@ TEMPLATE = app
 #程序单例运行使用插件
 include(./qtsingleapplication/src/qtsingleapplication.pri)
 
-CONFIG(debug, debug|release){
+#CONFIG(debug, debug|release){
     #显示调试信息
-    CONFIG +=console
-}
+    #CONFIG +=console
+#}
+
+RC_FILE += res.rc
 
 TRANSLATIONS = language.ts
 

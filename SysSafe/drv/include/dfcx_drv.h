@@ -18,22 +18,28 @@ extern "C" {
 #endif
 
 /**
-	全局初始化
+*	全局初始化
+*	return	@ = 0 成功
+*			@ < 0 失败
 */
 DFCX_DRV_API int init();
-
 
 /**
 *	全局释放
 */
 DFCX_DRV_API void unInit();
 
+/**
+*	检测设备在线状态
+*	return	@ >0 在线
+*			@ <0 不在线
+*/
+DFCX_DRV_API int checkOnline();
 
 /**
 *	连接设备
 */
 DFCX_DRV_API int connectDev();
-
 
 /**
 *	断开连接
@@ -163,6 +169,10 @@ DFCX_DRV_API int veinVerifyUser(CHAR *pChara, CHAR *temp);
 */
 DFCX_DRV_API int saveVeinTemp(StVein stVein);
 
+DFCX_DRV_API int soundCtl( int Sound);
+
+//Led[6]对应6个灯，0=亮灯，1=灭灯
+DFCX_DRV_API int ledCtl(int Led[6]);
 
 #ifdef __cplusplus
 };
