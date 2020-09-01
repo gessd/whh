@@ -69,7 +69,9 @@ int UserManage::QF_connectDev()
     waitThreadRunFinish(param);
     if(0 == param.nResult){
         m_stDeviceStatus.bUseint = true;
+        m_mutex.lock();
         m_stDeviceStatus.nLastTime = QDateTime::currentDateTime().toTime_t();
+        m_mutex.unlock();
     }
     return param.nResult;
 }
@@ -81,7 +83,9 @@ int UserManage::QF_disconnectDev()
     waitThreadRunFinish(param);
     if(0 == param.nResult){
         m_stDeviceStatus.bUseint = false;
+        m_mutex.lock();
         m_stDeviceStatus.nLastTime = QDateTime::currentDateTime().toTime_t();
+        m_mutex.unlock();
     }
     return param.nResult;
 }
@@ -320,7 +324,9 @@ void UserManage::setDeviceOfflineTimeOut(unsigned int nTimeOut)
     m_stDeviceStatus.nMaxDeviceOfflineTime = nTimeOut;
     if(m_pTimerCheckDevice->isActive()){
         m_pTimerCheckDevice->stop();
+        m_mutex.lock();
         m_stDeviceStatus.nLastTime = 0;
+        m_mutex.unlock();
     }
     m_pTimerCheckDevice->start(10*1000);
 }
@@ -335,14 +341,39 @@ unsigned int UserManage::getLastTimeUseDevice()
     return m_stDeviceStatus.nLastTime;
 }
 
+void UserManage::updateLastTime()
+{
+    unsigned int nTime = QDateTime::currentDateTime().toTime_t();
+    m_mutex.lock();
+    m_stDeviceStatus.nLastTime = nTime;
+    m_mutex.unlock();
+}
+
 void UserManage::onTimeOutCheckDecie()
 {
     //先检查设备是否在用状态
     if(m_stDeviceStatus.bUseint) return;
-    if(0 == m_stDeviceStatus.nLastTime) m_stDeviceStatus.nLastTime = QDateTime::currentDateTime().toTime_t();
+
+    int nConDev = QF_connectDev();
+    if(0 == nConDev) {
+        QF_disconnectDev();
+        return;
+    }
+    if(0 == m_stDeviceStatus.nLastTime){
+        m_mutex.lock();
+        m_stDeviceStatus.nLastTime = QDateTime::currentDateTime().toTime_t();
+        m_mutex.unlock();
+    }
+    m_mutex.lock();
+    unsigned int nLastTime = m_stDeviceStatus.nLastTime;
+    m_mutex.unlock();
     unsigned int nCurrentTime = QDateTime::currentDateTime().toTime_t();
-    if((nCurrentTime-m_stDeviceStatus.nLastTime)>=m_stDeviceStatus.nMaxDeviceOfflineTime){
+    unsigned int nMaxTime = m_stDeviceStatus.nMaxDeviceOfflineTime;
+    unsigned int nGapTime = nCurrentTime-nLastTime;
+    if(nGapTime>nMaxTime){
+        m_mutex.lock();
         m_stDeviceStatus.nLastTime = nCurrentTime;
+        m_mutex.unlock();
         emit timeOutDeviceOffline();
     }
 }

@@ -90,8 +90,6 @@ private slots:
     void onSetActionClicked(int buttonId);
     //设置语言
     void onSetLanguageClicked(int buttonId);
-    //定时器监控无操作处理
-    void onTimeOutOperation();
     //设备长时间离线
     void onTimeOutDeviceOffline();
 private:
@@ -123,7 +121,6 @@ private:
     //用户信息
     StUser m_stUserData;
     QMovie* m_pMovieFinger;
-    QTimer* m_pTimerOperation;
 };
 
 #endif // MAINWINDOW_H

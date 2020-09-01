@@ -124,11 +124,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->labelMovieFinger->setMovie(m_pMovieFinger);
     m_pMovieFinger->start();
 
-    m_pTimerOperation = new QTimer(this);
-    m_pTimerOperation->setProperty("time", QVariant::fromValue(QDateTime::currentDateTime().toTime_t()));
-    m_pTimerOperation->start(60*1000);
-    connect(m_pTimerOperation, SIGNAL(timeout()), this, SLOT(onTimeOutOperation()));
-
     installEventFilter(this);
     //使用事件过滤器出来界面移动
     ui->widgetTitle->installEventFilter(this);
@@ -241,7 +236,10 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         case QEvent::KeyRelease:
         case QEvent::Enter:
         case QEvent::Leave:
-            m_pTimerOperation->setProperty("time", QVariant::fromValue(QDateTime::currentDateTime().toTime_t()));
+        case QEvent::FocusIn:
+        case QEvent::Show:
+        case QEvent::Wheel:
+            m_userManage.updateLastTime();
             break;
         default:
             break;
@@ -652,33 +650,6 @@ void MainWindow::onSetLanguageClicked(int buttonId)
     if (standard == XMessageBox::No) return;
     //重启程序
     QApplication::exit(RETCODE_RESTART);
-}
-
-void MainWindow::onTimeOutOperation()
-{
-    unsigned int nLastTime = m_pTimerOperation->property("time").toInt();
-    unsigned int nCurrentTime = QDateTime::currentDateTime().toTime_t();
-
-    if((nCurrentTime - nLastTime) < _NoActionMaxTime) return;
-    int nAction = m_pGroupAction->checkedId();
-    int nRes = -1;
-    switch (nAction) {
-    case 0: nRes = 0; break; //无动作
-    case 1: nRes = m_userManage.QF_lockScreen();
-        break;
-    case 2:
-        nRes = m_userManage.QF_logout();
-        break;
-    case 3: nRes = m_userManage.QF_reboot();
-        break;
-    case 4: nRes = m_userManage.QF_halt();
-        break;
-    default:
-        break;
-    }
-    if(0> nRes){
-        qDebug()<<"操作执行失败";
-    }
 }
 
 void MainWindow::onTimeOutDeviceOffline()

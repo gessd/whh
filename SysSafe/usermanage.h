@@ -5,6 +5,7 @@
 #include <QtCore/QThread>
 #include <QtCore/QUuid>
 #include <QtCore/QTimer>
+#include <QtCore/QMutex>
 #include <QtWidgets/QToolButton>
 #include "contorllthread.h"
 
@@ -178,6 +179,11 @@ public:
        * @return 设备上次使用时间
        */
       unsigned int getLastTimeUseDevice();
+
+      /**
+       * @brief 更新上次响应时间
+       */
+      void updateLastTime();
 private slots:
       void onTimeOutCheckDecie();
 signals:
@@ -193,6 +199,7 @@ private:
     QTimer* m_pTimerCheckDevice;
     //设备状态
     StDeviceStatus m_stDeviceStatus;
+    QMutex m_mutex;
 };
 
 #endif // USERMANAGE_H
