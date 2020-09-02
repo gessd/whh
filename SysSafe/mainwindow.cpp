@@ -5,6 +5,7 @@
 #include <QtCore/QModelIndex>
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
+#include <QtCore/QProcess>
 #include "xmessagebox.h"
 #include "styledefine.h"
 #include "setconfig.h"
@@ -43,25 +44,23 @@ MainWindow::MainWindow(QWidget *parent) :
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_StyledBackground);
     //创建菜单
-    m_pQuitAction = new QAction(tr("退出"), this);
-    m_pShowAction = new QAction(tr("显示"), this);
+    m_pQuitAction = new QAction(QIcon(":/images/title_close.png"), tr("退出"), this);
+    m_pShowAction = new QAction(QIcon(":/images/win.png"), tr("显示"), this);
 
-    //创建状态栏
-    m_pTrayIconMenu = new QMenu(this);
-    m_pTrayIconMenu->addAction(m_pShowAction);
-    m_pTrayIconMenu->addSeparator();
-    m_pTrayIconMenu->addAction(m_pQuitAction);
-    m_pTrayIcon = new QSystemTrayIcon(this);
-    m_pTrayIcon->setContextMenu(m_pTrayIconMenu);
+    ////创建状态栏
+    //m_pTrayIconMenu = new QMenu(this);
+    //m_pTrayIconMenu->addAction(m_pShowAction);
+    //m_pTrayIconMenu->addSeparator();
+    //m_pTrayIconMenu->addAction(m_pQuitAction);
+    //m_pTrayIcon = new QSystemTrayIcon(this);
+    //m_pTrayIcon->setContextMenu(m_pTrayIconMenu);
+    //QIcon icon(QIcon(":/images/win.png"));
+    //m_pTrayIcon->setIcon(icon);
+    //setWindowIcon(icon);
+    //m_pTrayIcon->show();
 
+    ui->stackedWidget->setCurrentIndex(EnLoginWidgetIndex);
     m_pCurrenFingerButton = NULL;
-
-    QIcon icon(QIcon(":/images/win.png"));
-    m_pTrayIcon->setIcon(icon);
-    setWindowIcon(icon);
-    m_pTrayIcon->show();
-    ui->stackedWidget->setCurrentIndex(0);
-
     connect(m_pQuitAction, SIGNAL(triggered()), this, SLOT(onCloseWindow()));
     connect(m_pShowAction, SIGNAL(triggered()), this, SLOT(onShowWindow()));
 
@@ -81,26 +80,16 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->btnAddVein, SIGNAL(clicked()), this, SLOT(onBtnAddVeinClicked()));
     connect(ui->btnFingerCheck, SIGNAL(clicked()), this, SLOT(onBtnFingerChecked()));
     connect(ui->listWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onItemClicked(QListWidgetItem*)));
-    initFingerData(ui->btnFinger_1, 1);
-    initFingerData(ui->btnFinger_2, 2);
-    initFingerData(ui->btnFinger_3, 3);
-    initFingerData(ui->btnFinger_4, 4);
-    initFingerData(ui->btnFinger_5, 5);
-    initFingerData(ui->btnFinger_6, 6);
-    initFingerData(ui->btnFinger_7, 7);
-    initFingerData(ui->btnFinger_8, 8);
-    initFingerData(ui->btnFinger_9, 9);
-    initFingerData(ui->btnFinger_10, 10);
-    _BindFingerBloodButton(ui->btnFinger_1, ui->btnBlood_1);
-    _BindFingerBloodButton(ui->btnFinger_2, ui->btnBlood_2);
-    _BindFingerBloodButton(ui->btnFinger_3, ui->btnBlood_3);
-    _BindFingerBloodButton(ui->btnFinger_4, ui->btnBlood_4);
-    _BindFingerBloodButton(ui->btnFinger_5, ui->btnBlood_5);
-    _BindFingerBloodButton(ui->btnFinger_6, ui->btnBlood_6);
-    _BindFingerBloodButton(ui->btnFinger_7, ui->btnBlood_7);
-    _BindFingerBloodButton(ui->btnFinger_8, ui->btnBlood_8);
-    _BindFingerBloodButton(ui->btnFinger_9, ui->btnBlood_9);
-    _BindFingerBloodButton(ui->btnFinger_10, ui->btnBlood_10);
+    initFingerData(ui->btnFinger_1, 1, ui->btnBlood_1);
+    initFingerData(ui->btnFinger_2, 2, ui->btnBlood_2);
+    initFingerData(ui->btnFinger_3, 3, ui->btnBlood_3);
+    initFingerData(ui->btnFinger_4, 4, ui->btnBlood_4);
+    initFingerData(ui->btnFinger_5, 5, ui->btnBlood_5);
+    initFingerData(ui->btnFinger_6, 6, ui->btnBlood_6);
+    initFingerData(ui->btnFinger_7, 7, ui->btnBlood_7);
+    initFingerData(ui->btnFinger_8, 8, ui->btnBlood_8);
+    initFingerData(ui->btnFinger_9, 9, ui->btnBlood_9);
+    initFingerData(ui->btnFinger_10, 10, ui->btnBlood_10);
 
     m_pGroupAction = new QButtonGroup(this);
     m_pGroupAction->addButton(ui->radioButton_none, ActionNone);
@@ -137,15 +126,32 @@ MainWindow::MainWindow(QWidget *parent) :
         qss.close();
     }
 
-    //m_pTimer = new QTimer(this);
-    //connect(m_pTimer, SIGNAL(timeout()), this, SLOT(onTimeOut()));
-    //m_pTimer->start(60*1000);
+    int nRow = ui->listWidget->count();
+    for(int i=0;i<nRow;i++){
+        QListWidgetItem* item = ui->listWidget->item(i);
+        if(NULL == item) continue;
+        if(0 == i){
+            item->setIcon(QIcon(":/images/action.png"));
+        } else if(1 == i){
+            item->setIcon(QIcon(":/images/language.png"));
+        }
+    }
 
+    //设置最大时间输入范围
     ui->lineEditMaxTime->setValidator(new QIntValidator(1, 1000, this));
     connect(ui->lineEditMaxTime, SIGNAL(editingFinished()), this, SLOT(onSetMaxTime()));
     connect(&m_userManage, SIGNAL(timeOutDeviceOffline()), this, SLOT(onTimeOutDeviceOffline()));
-}
 
+    //启动监控设备程序
+    QProcess pro;
+    pro.startDetached(_CheckDevideProgramName_);
+    m_bConServer = false;
+    m_pLocalSocket = new QLocalSocket(this);
+    connect(m_pLocalSocket, SIGNAL(readyRead()), this, SLOT(onReadMessage()));
+    connect(m_pLocalSocket, SIGNAL(connected()),this, SLOT(onConnected()));
+    connect(m_pLocalSocket, SIGNAL(stateChanged(QLocalSocket::LocalSocketState)), this, SLOT(onStateChanged(QLocalSocket::LocalSocketState)));
+    connect(qApp, SIGNAL(messageReceived(QString)), this, SLOT(onMessageReceived(QString)));
+}
 
 MainWindow::~MainWindow()
 {
@@ -169,7 +175,7 @@ void MainWindow::showUserName()
     WCHAR wUserName[256] = {0};
     int nGet = m_userManage.QF_getUserName(wUserName);
     if(0 > nGet){
-        ui->labelPassMassage->setText(tr("获取用户信息失败，请重试"));
+        ui->labelPassMassage->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("获取用户信息失败，请关闭后重试")));
         return;
     }
     ui->btnLogon->setVisible(true);
@@ -178,14 +184,16 @@ void MainWindow::showUserName()
 
     int nCheck = m_userManage.QF_checkPwd();
     if(0 == nCheck){
-        qDebug()<<"用户密码为空，需要重新设置密码"<<qwstrUserName;
         ui->btnSetPass->setVisible(true);
         onBtnSetUserPass();
     }
+    //连接监控设备程序
+    onReconnection();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    //if(false == m_bConServer) onCloseWindow();
     hide();
     event->ignore();
 }
@@ -281,12 +289,14 @@ void MainWindow::onTimeOut()
 
 void MainWindow::onBtnTitleSet()
 {
-    int nActionSet = SetConfig::getSetValue(_ActionSet, ActionLockScreen).toInt();
-    int nLanguSet = SetConfig::getSetValue(_LanguageSet, 0).toInt();
+    unsigned int nActionSet = SetConfig::getSetValue(_ActionSet, ActionLockScreen).toUInt();
+    unsigned int nLanguSet = SetConfig::getSetValue(_LanguageSet, 0).toUInt();
     QAbstractButton* pBtnAction = m_pGroupAction->button(nActionSet);
     if(pBtnAction) pBtnAction->setChecked(true);
     QAbstractButton* pBtnLang = m_pGroupLanguage->button(nLanguSet);
     if(pBtnLang) pBtnLang->setChecked(true);
+    unsigned int nMaxTime = SetConfig::getSetValue(_MaxTimeOutDeviceOffline, 10).toUInt();
+    ui->lineEditMaxTime->setText(QString::number(nMaxTime));
     ui->stackedWidget->setCurrentIndex(EnSysSetWidgetIndex);
 }
 
@@ -318,7 +328,7 @@ void MainWindow::onBtnSetUserPass()
         std::wstring wstrPass = qstrPass.toStdWString();
         int nSet = m_userManage.QF_setPassword(const_cast<WCHAR*>(wstrUserName.c_str()), const_cast<WCHAR*>(wstrPass.c_str()));
         if(0 > nSet){
-            ui->labelPassMassage->setText(tr("密码设置错误"));
+            ui->labelPassMassage->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("密码设置错误")));
             onBtnSetUserPass();
         }
     }
@@ -339,7 +349,7 @@ void MainWindow::onBtnLogonClicked()
     std::wstring wstrPass = ui->lineEditPass->text().trimmed().toStdWString();
     int nVeri = m_userManage.QF_veriPassword(const_cast<WCHAR*>(wstrUserName.c_str()), const_cast<WCHAR*>(wstrPass.c_str()));
     if(0 != nVeri){
-        ui->labelPassMassage->setText(tr("登录失败: 未知的用户名或错误密码."));
+        ui->labelPassMassage->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("登录失败: 未知的用户名或错误密码")));
         ui->lineEditPass->clear();
         return;
     }
@@ -353,7 +363,7 @@ void MainWindow::onBtnLogonClicked()
     qDebug()<<"更新用户信息";
     int nAdd = m_userManage.QF_userAdd(&m_stUserData);
     if(0 > nAdd){
-        ui->labelPassMassage->setText(tr("用户信息创建失败，无法登陆"));
+        ui->labelPassMassage->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("用户信息创建失败，无法登陆")));
         qDebug()<<"添加用户失败"<<QString::fromStdWString(wstrUserName)<<QString::fromStdWString(wstrPass);
         return;
     }
@@ -362,7 +372,7 @@ void MainWindow::onBtnLogonClicked()
     pUserEx = m_userManage.QF_getUserInfoByUserName(m_stUserData.user_name);
 #endif
     if(NULL == pUserEx){
-        ui->labelPassMassage->setText(tr("用户信息获取失败，无法登陆"));
+        ui->labelPassMassage->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("户信息获取失败，无法登陆")));
         qDebug()<<"用户信息获取失败，无法登陆"<<QString::fromStdWString(wstrUserName)<<QString::fromStdWString(wstrPass);
         return;
     }
@@ -378,7 +388,7 @@ void MainWindow::onBtnLogonClicked()
 #endif
         QToolButton* pCurrentButton = bindButtonFinger(vein);
         if(NULL == pCurrentButton) {
-            XMessageBox::warning(this, tr("警告"), tr("指静脉信息绑定错误，无法使用"));
+            XMessageBox::warning(this, tr("警告"), QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("指静脉信息绑定错误，无法使用！")));
             m_userManage.QF_freeUserInfo(pUserEx);
             return;
         } else {
@@ -397,7 +407,7 @@ void MainWindow::onBtnLogonClicked()
     ui->labelPassMassage->clear();
 
     //设置设备最长离线时间
-    unsigned int nTimeOut = SetConfig::getSetValue(_MaxTimeOutDeviceOffline, 1).toInt();
+    unsigned int nTimeOut = SetConfig::getSetValue(_MaxTimeOutDeviceOffline, 10).toInt();
     if(0 == nTimeOut) nTimeOut = 1;
     ui->lineEditMaxTime->setText(QString::number(nTimeOut));
     m_userManage.setDeviceOfflineTimeOut(nTimeOut);
@@ -450,7 +460,7 @@ void MainWindow::onBtnAddVeinClicked()
 
     int nCon = m_userManage.QF_connectDev();
     if(0 != nCon){
-        ui->labelFingerText->setText(tr("无法连接设备，请重试"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("无法连接设备，请重试")));
         return;
     }
     ui->labelFingerText->setText(tr("设备连接成功，请放入手指"));
@@ -477,12 +487,12 @@ void MainWindow::onBtnAddVeinClicked()
     for(int i=0; i<nVienNum; i++){
         nCheck = m_userManage.QF_checkFinger(10, true);
         if(0 >= nCheck) {
-            ui->labelFingerText->setText(tr("未检测到手指，请重新录入"));
+            ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("未检测到手指，请重新录入")));
             goto ToFingerDisCon;
         }
         fVeinLen = m_userManage.QF_getVeinChara(cVeinData[i]);
         if(0 >= fVeinLen) {
-            ui->labelFingerText->setText(tr("未检测到指静脉信息，请重新录入"));
+            ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("未检测到指静脉信息，请重新录入")));
             goto ToFingerDisCon;
         }
         if(i>0){
@@ -491,7 +501,7 @@ void MainWindow::onBtnAddVeinClicked()
             if(0 > nCompare){
                 memset(cVeinData[i], 0, nVeinDataLen);
                 i--;
-                ui->labelFingerText->setText(tr("不是同一根手指，请重新录入"));
+                ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("不是同一根手指，请重新录入")));
                 goto ToFingerDisCon;
             }
         }
@@ -509,7 +519,7 @@ void MainWindow::onBtnAddVeinClicked()
     nCreate = m_userManage.QF_createVeinTemp(cVeinData[0], cVeinData[1], cVeinData[2], cVeinComplete);
     if(0 >= nCreate){
         _FingerProgress(0*_MaxProgressBar);
-        ui->labelFingerText->setText(tr("指静脉信息处理失败，请重新录入"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("指静脉信息处理失败，请重新录入")));
         goto ToFingerDisCon;
     }
     _FingerProgress(0.99*_MaxProgressBar);
@@ -521,7 +531,7 @@ void MainWindow::onBtnAddVeinClicked()
     nCreate = m_userManage.QF_veinAdd(pVein);
     if(0 > nCreate){
         _FingerProgress(0*_MaxProgressBar);
-        ui->labelFingerText->setText(tr("指静脉信息登记失败，请重试"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("指静脉信息登记失败，请重试")));
         goto ToFingerDisCon;
     }
     _FingerProgress(1*_MaxProgressBar);
@@ -536,7 +546,7 @@ ToFingerDisCon:
     int nDiscon = m_userManage.QF_disconnectDev();
     if(0 > nDiscon){
         QString qstrLast = ui->labelFingerText->text()+" ";
-        ui->labelFingerText->setText(qstrLast+tr("错误，无法断开设备"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("无法断开设备，请重试")));
     }
     curWidget->setEnabled(true);
 }
@@ -550,7 +560,7 @@ void MainWindow::onBtnFingerRemoveClicked()
     ui->labelFingerText->setText(tr("正在删除信息，请稍后"));
     int nDel = m_userManage.QF_veinDel(pVein);
     if(0 > nDel){
-        ui->labelFingerText->setText(tr("指静脉信息删除失败，请重试"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("指静脉信息删除失败，请重试")));
         return;
     }
 #ifdef _USER_DRV_API_
@@ -576,7 +586,7 @@ void MainWindow::onBtnFingerChecked()
 
     int nCon = m_userManage.QF_connectDev();
     if(0 != nCon){
-        ui->labelFingerText->setText(tr("无法连接设备，请重试"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("无法连接设备，请重试")));
         return;
     }
     QWidget* curWidget = ui->stackedWidget->currentWidget();
@@ -593,7 +603,7 @@ void MainWindow::onBtnFingerChecked()
     _FingerProgress(0.05*_MaxProgressBar);
     nCheck = m_userManage.QF_checkFinger(10, true);
     if(0 >= nCheck) {
-        ui->labelFingerText->setText(tr("未检测到手指，请重试"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("未检测到手指，请重试")));
         goto ToFingerDisCon;
     }
     //}
@@ -602,7 +612,7 @@ void MainWindow::onBtnFingerChecked()
     //等待检测指静脉信息
     lVeinLen = m_userManage.QF_getVeinChara(cVeinData);
     if(0>= lVeinLen){
-        ui->labelFingerText->setText(tr("未检测到指静脉信息，请重试"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("未检测到指静脉信息，请重试")));
         goto ToFingerDisCon;
     }
     //}
@@ -613,7 +623,7 @@ void MainWindow::onBtnFingerChecked()
     nCompare = m_userManage.QF_veinVerifyUser(cVeinData, pVein->temp);
 #endif
     if(0 != nCompare){
-        ui->labelFingerText->setText(tr("指静脉信息不匹配，请重试"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("指静脉信息不匹配，请重试")));
         goto ToFingerDisCon;
     }
     _FingerProgress(1*_MaxProgressBar);
@@ -621,7 +631,7 @@ void MainWindow::onBtnFingerChecked()
 ToFingerDisCon:
     int nDiscon = m_userManage.QF_disconnectDev();
     if(0 != nDiscon){
-        ui->labelFingerText->setText(tr("无法断开设备，请重试"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("无法断开设备，请重试")));
         return;
     }
     if(curWidget){
@@ -677,7 +687,46 @@ void MainWindow::onTimeOutDeviceOffline()
     }
 }
 
-void MainWindow::initFingerData(QToolButton *button, int index)
+void MainWindow::onConnected()
+{
+    qDebug()<<"---- connect server";
+    m_bConServer = true;
+}
+
+void MainWindow::onStateChanged(QLocalSocket::LocalSocketState socketState)
+{
+    if(QLocalSocket::UnconnectedState == socketState){
+        //未连接到监控设备程序，重新连接
+        QTimer::singleShot(2000, this, SLOT(onReconnection()));
+    }
+}
+
+void MainWindow::onReadMessage()
+{
+    if(NULL == m_pLocalSocket) return;
+    QByteArray data = m_pLocalSocket->readAll();
+    qDebug()<<"---- read message"<<data;
+    if(data.contains(_ShowWindow_)){
+        onShowWindow();
+    } else if(data.contains(_CloseWindow_)){
+        onCloseWindow();
+    }
+}
+
+void MainWindow::onReconnection()
+{
+    if(false == m_pLocalSocket) return;
+    qDebug()<<"---- start connect server"<<QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
+    m_pLocalSocket->connectToServer(_LocasServerName_);
+    m_pLocalSocket->waitForConnected();
+}
+
+void MainWindow::onMessageReceived(QString qstrMessage)
+{
+    onShowWindow();
+}
+
+void MainWindow::initFingerData(QToolButton *button, int index, QToolButton* btnBlood)
 {
     StVein* vein = new StVein;
     vein->fg_id = index;
@@ -687,6 +736,7 @@ void MainWindow::initFingerData(QToolButton *button, int index)
 #endif
     m_mapButtonFinger.insert(button, vein);
     connect(button, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
+    _BindFingerBloodButton(button, btnBlood);
 }
 
 void MainWindow::uninitFingerData()

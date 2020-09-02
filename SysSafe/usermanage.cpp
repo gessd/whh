@@ -326,6 +326,8 @@ int UserManage::QF_saveVeinTemp(StVein stVein)
 
 void UserManage::setDeviceOfflineTimeOut(unsigned int nTimeOut)
 {
+    //直接返回，不需要在此操作设备监控
+    return;
     if(0 == nTimeOut) nTimeOut = 1;
     nTimeOut = nTimeOut*60;
     if(m_stDeviceStatus.nMaxDeviceOfflineTime == nTimeOut) return;

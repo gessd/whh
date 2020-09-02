@@ -2,6 +2,8 @@
     <qresource prefix="/">
 		<file>qss/windowstyle.qss</file>
 		<file>images/win.png</file>
+		<file>images/language.png</file>
+		<file>images/action.png</file>
         <file>images/l1.png</file>
 		<file>images/l2.png</file>
 		<file>images/l3.png</file>

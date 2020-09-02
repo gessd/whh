@@ -5,6 +5,8 @@
 #include <QtCore/QProcess>
 #include "xmessagebox.h"
 #include "QtSingleApplication"
+#include "styledefine.h"
+#include "setconfig.h"
 #include <QFile>
 
 //只能启动单实例程序
@@ -27,7 +29,7 @@ int main(int argc, char *argv[])
 #endif
     w.show();
     if(0 != w.sysInit()){
-        XMessageBox::warning(&w, QObject::tr("警告"), QObject::tr("系统初始化失败，无法使用！"));
+        XMessageBox::warning(&w, QObject::tr("警告"), QString("<font color=%1>"+QObject::tr("系统初始化失败，无法使用！")+"</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")));
         return 0;
     }
     w.showUserName();

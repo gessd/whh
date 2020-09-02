@@ -8,6 +8,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QListWidgetItem>
 #include <QtGui/QMovie>
+#include <QtNetwork/QLocalSocket>
 #include "createuserdialog.h"
 //#include "dfcx_common.h"
 //#include "dfcx_drv.h"
@@ -92,9 +93,20 @@ private slots:
     void onSetLanguageClicked(int buttonId);
     //设备长时间离线
     void onTimeOutDeviceOffline();
+
+    //连接到服务端
+    void onConnected();
+    //连接状态
+    void onStateChanged(QLocalSocket::LocalSocketState socketState);
+    //收到通信消息
+    void onReadMessage();
+    //重新连接
+    void onReconnection();
+    //单实例程序通信
+    void onMessageReceived(QString qstrMessage);
 private:
     //初始主页手指按钮
-    void initFingerData(QToolButton* button, int index);
+    void initFingerData(QToolButton* button, int index, QToolButton* btnBlood);
     void uninitFingerData();
     //绑定手指指静脉信息
     QToolButton* bindButtonFinger(StVein vein);
@@ -121,6 +133,9 @@ private:
     //用户信息
     StUser m_stUserData;
     QMovie* m_pMovieFinger;
+
+    bool m_bConServer;
+    QLocalSocket* m_pLocalSocket;
 };
 
 #endif // MAINWINDOW_H

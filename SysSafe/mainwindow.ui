@@ -68,14 +68,25 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
     <widget class="QLabel" name="labelTitelText">
      <property name="geometry">
       <rect>
-       <x>18</x>
+       <x>40</x>
        <y>10</y>
        <width>261</width>
-       <height>21</height>
+       <height>31</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>微软雅黑</family>
+       <pointsize>10</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
      <property name="text">
-      <string>指静脉安全登录系统</string>
+      <string>EasyDF指静脉认证管理</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
     <widget class="QToolButton" name="btnTitleSet">
@@ -171,6 +182,22 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
       <enum>Qt::ToolButtonTextBesideIcon</enum>
      </property>
     </widget>
+    <widget class="QToolButton" name="toolButton">
+     <property name="geometry">
+      <rect>
+       <x>5</x>
+       <y>10</y>
+       <width>28</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">.QToolButton{image:url(:/images/win.png);}</string>
+     </property>
+     <property name="text">
+      <string>...</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
@@ -182,7 +209,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="loginWidget">
      <widget class="QLabel" name="label">
@@ -918,6 +945,19 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
         <width>155</width>
         <height>381</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QListWidget::item{
+    height:55px;
+}
+QTableWidget::item:selected{
+    background-color:rgb(240,241,247);
+}</string>
       </property>
       <item>
        <property name="text">

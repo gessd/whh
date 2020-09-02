@@ -14,8 +14,6 @@ namespace Ui {
 class MainWindow;
 }
 
-#define _LocasServerName_ "syssafedevicecheck"
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

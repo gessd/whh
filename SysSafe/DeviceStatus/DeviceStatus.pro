@@ -25,6 +25,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #程序单例运行使用插件
 include(../qtsingleapplication/src/qtsingleapplication.pri)
 
+RC_FILE += ../res.rc
+
+#显示调试信息
+#CONFIG +=console
 
 SOURCES += \
         main.cpp \
