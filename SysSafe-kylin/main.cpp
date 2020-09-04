@@ -8,7 +8,7 @@
 #include <QFile>
 
 //只能启动单实例程序
-#define _SingleProgram_
+//#define _SingleProgram_
 #define _SingleAppId_ "FingerProgram"
 
 int main(int argc, char *argv[])
@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
         return 0;
     }
     w.showFingerInfo();
-
     int nExec = app.exec();
     w.sysUnInit();
     if (nExec == RETCODE_RESTART){
@@ -39,4 +38,5 @@ int main(int argc, char *argv[])
         return 0;
     }
     return nExec;
+
 }

@@ -199,17 +199,19 @@ void MainWindow::showFingerInfo()
     ui->btnTitleSet->setVisible(true);
     ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
 
-    //获取已录入指静脉信息
-    int drvId = m_pFingerVeinDeviceInfo->device_id;
-    int uid = getuid();
-    int idxStart = 0;
-    int idxEnd = -1;
-    QList<QVariant> args;
-    args << drvId<< uid << idxStart << idxEnd;
+    if(m_pFingerVeinDeviceInfo){
+        //获取已录入指静脉信息
+        int drvId = m_pFingerVeinDeviceInfo->device_id;
+        int uid = getuid();
+        int idxStart = 0;
+        int idxEnd = -1;
+        QList<QVariant> args;
+        args << drvId<< uid << idxStart << idxEnd;
 
-    serviceInterface->callWithCallback("GetFeatureList", args, this,
-                                       SLOT(showFeaturesCallback(QDBusMessage)),
-                                       SLOT(errorCallback(QDBusError)));
+        serviceInterface->callWithCallback("GetFeatureList", args, this,
+                                           SLOT(showFeaturesCallback(QDBusMessage)),
+                                           SLOT(errorCallback(QDBusError)));
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

@@ -1,0 +1,10 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.12
+Name=MyProgram
+Comment=This is my comment
+Exec=/home/test/work/build-SysSafe-kylin/SysSafe
+Icon=/home/test/work/whh/SysSafe-kylin/file/left_Icon.png
+Terminal=false
+Type=Application
+Categories=Utility;Application;
