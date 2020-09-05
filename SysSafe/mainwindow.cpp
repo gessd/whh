@@ -133,7 +133,11 @@ MainWindow::MainWindow(QWidget *parent) :
         if(0 == i){
             item->setIcon(QIcon(":/images/action.png"));
         } else if(1 == i){
+            item->setIcon(QIcon(":/images/account.png"));
+        } else if(2 == i){
             item->setIcon(QIcon(":/images/language.png"));
+        } else if(3 == i) {
+            item->setIcon(QIcon(":/images/voice.png"));
         }
     }
 
@@ -141,6 +145,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEditMaxTime->setValidator(new QIntValidator(1, 1000, this));
     connect(ui->lineEditMaxTime, SIGNAL(editingFinished()), this, SLOT(onSetMaxTime()));
     connect(&m_userManage, SIGNAL(timeOutDeviceOffline()), this, SLOT(onTimeOutDeviceOffline()));
+
+    //声音事件
+    unsigned int nVoice = SetConfig::getSetValue(_VoiceSet, 1).toUInt();
+    ui->horizontalSliderVoice->setValue(nVoice);
+    connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
 
     //启动监控设备程序
     QProcess pro;
@@ -685,6 +694,14 @@ void MainWindow::onTimeOutDeviceOffline()
     default:
         break;
     }
+}
+
+void MainWindow::onVoiceValueChanged(int value)
+{
+    if(0 > value) value = 0;
+    if(value > 10) value = 10;
+    SetConfig::setSetValue(_VoiceSet, value);
+    m_userManage.QF_soundCtl(value);
 }
 
 void MainWindow::onConnected()

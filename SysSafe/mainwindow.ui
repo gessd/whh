@@ -209,7 +209,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="loginWidget">
      <widget class="QLabel" name="label">
@@ -966,7 +966,17 @@ QTableWidget::item:selected{
       </item>
       <item>
        <property name="text">
-        <string>支持语音</string>
+        <string>验证策略</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>界面语音</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>音量设置</string>
        </property>
       </item>
      </widget>
@@ -975,12 +985,12 @@ QTableWidget::item:selected{
        <rect>
         <x>170</x>
         <y>9</y>
-        <width>491</width>
-        <height>261</height>
+        <width>531</width>
+        <height>321</height>
        </rect>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="actionWidget">
        <widget class="QLabel" name="label_7">
@@ -1104,6 +1114,47 @@ QTableWidget::item:selected{
         </widget>
        </widget>
       </widget>
+      <widget class="QWidget" name="page">
+       <widget class="QLabel" name="label_11">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>10</y>
+          <width>411</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>切换指静脉安全登录策略</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxOneCheck">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>90</y>
+          <width>111</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>1：1验证</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxNCheck">
+        <property name="geometry">
+         <rect>
+          <x>150</x>
+          <y>90</y>
+          <width>111</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>1：N验证</string>
+        </property>
+       </widget>
+      </widget>
       <widget class="QWidget" name="languageWidget">
        <widget class="QLabel" name="label_8">
         <property name="geometry">
@@ -1123,8 +1174,8 @@ QTableWidget::item:selected{
          <rect>
           <x>20</x>
           <y>60</y>
-          <width>431</width>
-          <height>181</height>
+          <width>321</width>
+          <height>241</height>
          </rect>
         </property>
         <property name="title">
@@ -1182,6 +1233,43 @@ QTableWidget::item:selected{
           <string>蒙文</string>
          </property>
         </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="page_2">
+       <widget class="QLabel" name="label_13">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>20</y>
+          <width>471</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>滚动滑轮进行音量设置，数值越大，音量越大，数值为0时没有声音</string>
+        </property>
+       </widget>
+       <widget class="QSlider" name="horizontalSliderVoice">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>80</y>
+          <width>241</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>10</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksAbove</enum>
+        </property>
        </widget>
       </widget>
      </widget>

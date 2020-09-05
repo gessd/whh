@@ -324,6 +324,20 @@ int UserManage::QF_saveVeinTemp(StVein stVein)
     return param.nResult;
 }
 
+int UserManage::QF_soundCtl(int Sound)
+{
+    _StFunParamAndRes param;
+    param.type = ft_soundCtl;
+    param.nCode = Sound;
+    waitThreadRunFinish(param);
+    return param.nResult;
+}
+
+int UserManage::QF_ledCtl(int Led[])
+{
+    return -1;
+}
+
 void UserManage::setDeviceOfflineTimeOut(unsigned int nTimeOut)
 {
     //直接返回，不需要在此操作设备监控

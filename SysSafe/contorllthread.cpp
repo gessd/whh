@@ -52,6 +52,8 @@ void ContorllThread::run()
     case ft_veinVerifyUser:  thread_veinVerifyUser(); break;
     case ft_saveVeinTemp:  thread_saveVeemp(); break;
     case ft_checkOnline: thread_checkOnline(); break;
+    case ft_soundCtl: thread_soundCtl(); break;
+    case ft_ledCtl: thread_ledCtl(); break;
     default:
         break;
     }
@@ -280,5 +282,15 @@ void ContorllThread::thread_saveVeemp()
 void ContorllThread::thread_checkOnline()
 {
     m_pFunc->nResult = checkOnline();
+}
+
+void ContorllThread::thread_soundCtl()
+{
+    m_pFunc->nResult = soundCtl(m_pFunc->nCode);
+}
+
+void ContorllThread::thread_ledCtl()
+{
+
 }
 #endif

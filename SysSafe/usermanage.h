@@ -169,6 +169,11 @@ public:
      */
     int QF_saveVeinTemp(StVein stVein);
 
+
+    int QF_soundCtl(int Sound);
+
+    int QF_ledCtl(int Led[6]);
+
     /**
        * @brief 设置设备超时时间
        * @param nTimeOut 分钟
