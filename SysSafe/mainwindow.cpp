@@ -152,9 +152,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
 
     QSettings setOneCheck(_RegeditPathOneCheck_, QSettings::NativeFormat);
-    setOneCheck.value(_RegetditKeyOneCheck_);
+    if(setOneCheck.value(".").toString().contains(_RegeditPathOneCheck_)){
+        ui->checkBoxOneCheck->setChecked(true);
+    }
     QSettings setNCheck(_RegeditPathNCheck_, QSettings::NativeFormat);
-    setNCheck.value(_RegetditKeyNCheck_);
+    if(setNCheck.value(".").toString().contains(_RegeditValueNCheck_)){
+        ui->checkBoxNCheck->setChecked(true);
+    }
     connect(ui->checkBoxOneCheck, SIGNAL(clicked()), this, SLOT(onOneCheckClicked()));
     connect(ui->checkBoxNCheck, SIGNAL(clicked()), this, SLOT(onNCheckClicked()));
 
@@ -714,13 +718,13 @@ void MainWindow::onVoiceValueChanged(int value)
 void MainWindow::onOneCheckClicked()
 {
     QSettings settings(_RegeditPathOneCheck_, QSettings::NativeFormat);
-    settings.setValue(_RegetditKeyOneCheck_, 1);
+    settings.setValue(".", _RegeditValueOneCheck_);
 }
 
 void MainWindow::onNCheckClicked()
 {
     QSettings settings(_RegeditPathNCheck_, QSettings::NativeFormat);
-    settings.setValue(_RegetditKeyNCheck_, 1);
+    settings.setValue(".", _RegeditValueNCheck_);
 }
 
 void MainWindow::onConnected()
