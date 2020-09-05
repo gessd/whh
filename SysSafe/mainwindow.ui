@@ -990,7 +990,7 @@ QTableWidget::item:selected{
        </rect>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="actionWidget">
        <widget class="QLabel" name="label_7">
