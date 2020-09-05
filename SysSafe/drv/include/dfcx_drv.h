@@ -165,6 +165,11 @@ DFCX_DRV_API int veinCompare(CHAR *pChara1, CHAR *pChara2, int score);
 DFCX_DRV_API int veinVerifyUser(CHAR *pChara, CHAR *temp);
 
 /**
+*	1:N 验证
+*/
+DFCX_DRV_API StUserEx *veinSearchUser(CHAR *pChara);
+
+/**
 *	保存特征
 */
 DFCX_DRV_API int saveVeinTemp(StVein stVein);
