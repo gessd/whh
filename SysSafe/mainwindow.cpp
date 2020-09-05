@@ -151,6 +151,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->horizontalSliderVoice->setValue(nVoice);
     connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
 
+    QSettings setOneCheck(_RegeditPathOneCheck_, QSettings::NativeFormat);
+    setOneCheck.value(_RegetditKeyOneCheck_);
+    QSettings setNCheck(_RegeditPathNCheck_, QSettings::NativeFormat);
+    setNCheck.value(_RegetditKeyNCheck_);
+    connect(ui->checkBoxOneCheck, SIGNAL(clicked()), this, SLOT(onOneCheckClicked()));
+    connect(ui->checkBoxNCheck, SIGNAL(clicked()), this, SLOT(onNCheckClicked()));
+
     //启动监控设备程序
     QProcess pro;
     pro.startDetached(_CheckDevideProgramName_);
@@ -702,6 +709,18 @@ void MainWindow::onVoiceValueChanged(int value)
     if(value > 10) value = 10;
     SetConfig::setSetValue(_VoiceSet, value);
     m_userManage.QF_soundCtl(value);
+}
+
+void MainWindow::onOneCheckClicked()
+{
+    QSettings settings(_RegeditPathOneCheck_, QSettings::NativeFormat);
+    settings.setValue(_RegetditKeyOneCheck_, 1);
+}
+
+void MainWindow::onNCheckClicked()
+{
+    QSettings settings(_RegeditPathNCheck_, QSettings::NativeFormat);
+    settings.setValue(_RegetditKeyNCheck_, 1);
 }
 
 void MainWindow::onConnected()

@@ -61,4 +61,11 @@ enum _ActionDeviceOffline
 #define _ShowWindow_ "show"
 #define _CloseWindow_ "close"
 
+//注册表
+//1:1验证
+#define _RegeditPathOneCheck_ "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{42001976-0E5D-4F2E-BCC6-8BF6AD3CEE5C}"
+#define _RegetditKeyOneCheck_ "DfcxCredentialProvider"
+//1:N验证
+#define _RegeditPathNCheck_   "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{7A11D275-8634-47A0-84CF-94773519E865}"
+#define _RegetditKeyNCheck_   "Dfcx1NCredentialProvider"
 #endif // _STYLEDEFINE_H_

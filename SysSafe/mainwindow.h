@@ -95,6 +95,8 @@ private slots:
     void onTimeOutDeviceOffline();
     //声音大小改变
     void onVoiceValueChanged(int value);
+    void onOneCheckClicked();
+    void onNCheckClicked();
 
     //连接到服务端
     void onConnected();
