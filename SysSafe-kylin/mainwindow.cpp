@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <pwd.h>
 
+#define	XG_ERR_SUCCESS                0x00
 typedef char *LPCTSTR;
 
 typedef struct _API_FV
@@ -22,14 +23,12 @@ typedef struct _API_FV
     long (*FV_ConnectDev) (LPCTSTR sDev, LPCTSTR sPasswrod);
     long (*FV_CloseDev) (long lDevHandle);
     long (*FV_SendCmdPacket) (long lDevHandle, long lCmd, LPCTSTR sData);
+    long (*FV_RecvCmdPacket) (long lDevHandle, LPCTSTR sData, long lTimeout);
 
 } FVAPI_t, *pFVAPI_t;
 static FVAPI_t m_FVAPI;
 static long s_devHd = 0;
-
-long (*FV_ConnectDev) (LPCTSTR sDev, LPCTSTR sPasswrod);
-long (*FV_CloseDev) (long lDevHandle);
-long (*FV_SendCmdPacket) (long lDevHandle, long lCmd, LPCTSTR sData);
+void *pSoHandle = NULL;
 
 static void* GetFVAPI(void *pSoHandle, const char* sApiName)
 {
@@ -51,7 +50,6 @@ static void* GetFVAPI(void *pSoHandle, const char* sApiName)
 static int InitSo(char* sSoFileName)
 {
     char* sError = NULL;
-    void *pSoHandle = NULL;
 
     if(sSoFileName == NULL) return -1;
 
@@ -68,6 +66,7 @@ static int InitSo(char* sSoFileName)
     m_FVAPI.FV_ConnectDev = (long(*)(LPCTSTR,LPCTSTR))GetFVAPI(pSoHandle, "FV_ConnectDev");
     m_FVAPI.FV_CloseDev = (long(*)(long))GetFVAPI(pSoHandle, "FV_CloseDev");
     m_FVAPI.FV_SendCmdPacket = (long(*)(long,long,LPCTSTR))GetFVAPI(pSoHandle, "FV_SendCmdPacket");
+    m_FVAPI.FV_RecvCmdPacket = (long(*)(long,LPCTSTR,long))GetFVAPI(pSoHandle, "FV_RecvCmdPacket");
 }
 
 enum EnWidgetIndex
@@ -184,11 +183,6 @@ MainWindow::MainWindow(QWidget *parent) :
 #else
     ui->labelDeviceStatus->setVisible(fasle);
 #endif
-    //声音事件
-    unsigned int nVoice = SetConfig::getSetValue(_VoiceSet, 1).toUInt();
-    connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
-    ui->horizontalSliderVoice->setValue(nVoice);
-
     //注册自定义数据类型
     registerCustomTypes();
 
@@ -208,6 +202,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(qApp, SIGNAL(messageReceived(QString)), this, SLOT(onMessageReceived(QString)));
 
     InitSo("/usr/lib/libXGComApi.so");
+
+    //声音事件
+    unsigned int nVoice = SetConfig::getSetValue(_VoiceSet, 1).toUInt();
+    connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
+    ui->horizontalSliderVoice->setValue(nVoice);
 }
 
 MainWindow::~MainWindow()
@@ -563,15 +562,41 @@ void MainWindow::onUSBDeviceHotPlug(int drvid, int action, int devNumNow)
     }
 }
 
+int setSound(int Sound)
+{
+    if(!m_FVAPI.FV_ConnectDev) return -1;
+    s_devHd = m_FVAPI.FV_ConnectDev((char*)"VID=8455,PID=30008", (char*)"00000000");
+    if (s_devHd <= 0) {
+        //bio_print_error("df100_ops_open failed\n");
+        s_devHd = 0;
+        return -1;
+    }
+    if (s_devHd <= 0) {
+        return -1;
+    }
+    int ret;
+    unsigned char bData[16] = { 0 };
+    char sData[50] = { 0 };
+
+    sprintf(sData, "20%02X", Sound);
+    ret = m_FVAPI.FV_SendCmdPacket(s_devHd, 0x4B, sData);
+    if(ret == XG_ERR_SUCCESS)
+    {
+        m_FVAPI.FV_RecvCmdPacket(s_devHd, sData, 1000);
+    }
+    if (s_devHd > 0) {
+        m_FVAPI.FV_CloseDev(s_devHd);
+        s_devHd = 0;
+    }
+    return ret*-1;
+}
+
 void MainWindow::onVoiceValueChanged(int value)
 {
+    setSound(value);
     if(0 > value) value = 0;
     if(value > 15) value = 15;
     ui->labelVoiceNum->setText(tr("音量:")+ QString::number(value));
-#ifdef Q_OS_WIN
-    SetConfig::setSetValue(_VoiceSet, value);
-    m_userManage.QF_soundCtl(value);
-#endif
 }
 
 void MainWindow::onMessageReceived(QString qstrMessage)
