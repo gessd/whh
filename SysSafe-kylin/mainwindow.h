@@ -120,7 +120,6 @@ private:
     QAction *m_pQuitAction;
     QAction *m_pShowAction;
     QToolButton* m_pCurrenFingerButton; //当前手指按钮,指静脉信息管理使用
-    QButtonGroup* m_pGroupAction;
     QButtonGroup* m_pGroupLanguage;
     QMovie* m_pMovieFinger;
 
@@ -129,6 +128,7 @@ private:
     int deviceCount;
     //指静脉设备信息
     DeviceInfo* m_pFingerVeinDeviceInfo;
+    int m_nDeviceId;
 };
 
 #endif // MAINWINDOW_H

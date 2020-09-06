@@ -8,7 +8,7 @@
 #include <QFile>
 
 //只能启动单实例程序
-//#define _SingleProgram_
+#define _SingleProgram_
 #define _SingleAppId_ "FingerProgram"
 
 int main(int argc, char *argv[])
@@ -26,10 +26,11 @@ int main(int argc, char *argv[])
     MainWindow w;
 #endif
     w.show();
-    if(0 != w.sysInit()){
-        XMessageBox::warning(&w, QObject::tr("警告"), QObject::tr("系统初始化失败，无法使用！"));
-        return 0;
-    }
+    w.sysInit();
+    //if(0 != w.sysInit()){
+    //    XMessageBox::warning(&w, QObject::tr("警告"), QObject::tr("系统初始化失败，无法使用！"));
+    //    return 0;
+    //}
     w.showFingerInfo();
     int nExec = app.exec();
     w.sysUnInit();

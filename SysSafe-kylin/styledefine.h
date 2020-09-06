@@ -36,6 +36,8 @@
 #define _PassSpecial_  "Password/Special"
 //密码长度
 #define _PassLength_  "Password/Length"
+//错误信息颜色
+#define _MessageErrorColor "MessageColor/Error"
 ////============================================////
 
 //无动作时间 秒
