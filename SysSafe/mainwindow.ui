@@ -209,7 +209,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="loginWidget">
      <widget class="QLabel" name="label">
@@ -414,7 +414,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
        </rect>
       </property>
       <property name="text">
-       <string>双击手指对应的按钮进行登记、验证、删除信息。</string>
+       <string>单击手指对应的按钮进行登记、验证、删除信息。</string>
       </property>
      </widget>
      <widget class="QToolButton" name="btnFinger_1">

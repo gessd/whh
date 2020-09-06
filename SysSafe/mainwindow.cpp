@@ -165,7 +165,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->listWidget->removeItemWidget(ui->listWidget->item(1));
     ui->stackedWidgetSetSys->removeWidget(ui->stackedWidgetSetSys->widget(1));
 #else
-    ui->labelDeviceStatus->setVisible(fasle);
+    ui->labelDeviceStatus->setVisible(false);
 #endif
 
     //设置最大时间输入范围
@@ -178,6 +178,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
     ui->horizontalSliderVoice->setValue(nVoice);
 
+    /*
     if(Is64BitSystem()){
         //#ifdef Q_OS_WIN64
         PVOID OldValue = NULL;
@@ -207,6 +208,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if(setNCheck.value(".").toString().contains(_RegeditValueNCheck_)){
         ui->checkBoxNCheck->setChecked(true);
     }
+    */
 
     connect(ui->checkBoxOneCheck, SIGNAL(clicked()), this, SLOT(onOneCheckClicked()));
     connect(ui->checkBoxNCheck, SIGNAL(clicked()), this, SLOT(onNCheckClicked()));
@@ -241,6 +243,14 @@ void MainWindow::sysUnInit()
 
 void MainWindow::showUserName()
 {
+    //获取验证
+    if(1 == m_userManage.QF_get11Status()){
+        ui->checkBoxOneCheck->setChecked(true);
+    }
+    if(1 == m_userManage.QF_get1NStatus()){
+        ui->checkBoxNCheck->setChecked(true);
+    }
+
     WCHAR wUserName[256] = {0};
     int nGet = m_userManage.QF_getUserName(wUserName);
     if(0 > nGet){
@@ -767,14 +777,20 @@ void MainWindow::onVoiceValueChanged(int value)
 
 void MainWindow::onOneCheckClicked()
 {
-    QSettings settings(_RegeditPathOneCheck_, QSettings::NativeFormat);
-    settings.setValue(".", _RegeditValueOneCheck_);
+    if(ui->checkBoxOneCheck->isChecked()){
+        m_userManage.QF_set11Status(1);
+    } else {
+        m_userManage.QF_set11Status(0);
+    }
 }
 
 void MainWindow::onNCheckClicked()
 {
-    QSettings settings(_RegeditPathNCheck_, QSettings::NativeFormat);
-    settings.setValue(".", _RegeditValueNCheck_);
+    if(ui->checkBoxNCheck->isChecked()){
+        m_userManage.QF_set1NStatus(1);
+    } else {
+        m_userManage.QF_set1NStatus(0);
+    }
 }
 
 void MainWindow::onConnected()

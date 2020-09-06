@@ -54,6 +54,10 @@ void ContorllThread::run()
     case ft_checkOnline: thread_checkOnline(); break;
     case ft_soundCtl: thread_soundCtl(); break;
     case ft_ledCtl: thread_ledCtl(); break;
+    case ft_get11Status: thread_get11Status(); break;
+        case ft_set11Status: thread_set11Status(); break;
+        case ft_get1NStatus: thread_get1NStatus(); break;
+        case ft_set1NStatus: thread_set1NStatus(); break;
     default:
         break;
     }
@@ -292,5 +296,25 @@ void ContorllThread::thread_soundCtl()
 void ContorllThread::thread_ledCtl()
 {
 
+}
+
+void ContorllThread::thread_get11Status()
+{
+    m_pFunc->nResult = get11Status();
+}
+
+void ContorllThread::thread_set11Status()
+{
+    m_pFunc->nResult = set11Status(m_pFunc->nCode);
+}
+
+void ContorllThread::thread_get1NStatus()
+{
+    m_pFunc->nResult = get1NStatus();
+}
+
+void ContorllThread::thread_set1NStatus()
+{
+    m_pFunc->nResult = set1NStatus(m_pFunc->nCode);
 }
 #endif

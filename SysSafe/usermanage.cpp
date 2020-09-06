@@ -373,6 +373,40 @@ void UserManage::updateLastTime()
     m_mutex.unlock();
 }
 
+int UserManage::QF_get11Status()
+{
+    _StFunParamAndRes param;
+    param.type = ft_get11Status;
+    waitThreadRunFinish(param);
+    return param.nResult;
+}
+
+int UserManage::QF_set11Status(int status)
+{
+    _StFunParamAndRes param;
+    param.type = ft_set11Status;
+    param.nCode = status;
+    waitThreadRunFinish(param);
+    return param.nResult;
+}
+
+int UserManage::QF_get1NStatus()
+{
+    _StFunParamAndRes param;
+    param.type = ft_get1NStatus;
+    waitThreadRunFinish(param);
+    return param.nResult;
+}
+
+int UserManage::QF_set1NStatus(int status)
+{
+    _StFunParamAndRes param;
+    param.type = ft_set1NStatus;
+    param.nCode = status;
+    waitThreadRunFinish(param);
+    return param.nResult;
+}
+
 void UserManage::onTimeOutCheckDecie()
 {
     //先检查设备是否在用状态

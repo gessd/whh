@@ -194,6 +194,34 @@ public:
        * @brief 更新上次响应时间
        */
     void updateLastTime();
+
+    /**
+    *	获取1:1验证状态
+    *	返回0	未启用
+    *	返回1	已启用
+    */
+    int QF_get11Status();
+
+    /**
+    *	设置1:1验证状态
+    *	返回0	设置成功
+    *	返回<0	设置失败
+    */
+    int QF_set11Status(int status);
+
+    /**
+    *	获取1:N验证状态
+    *	返回0	未启用
+    *	返回1	已启用
+    */
+    int QF_get1NStatus();
+
+    /**
+    *	设置1:N验证状态
+    *	返回0	设置成功
+    *	返回<0	设置失败
+    */
+    int QF_set1NStatus(int status);
 private slots:
     void onTimeOutCheckDecie();
 signals:
