@@ -5,13 +5,70 @@
 #include <QtCore/QModelIndex>
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
+#include <QtWidgets/QApplication>
 #include "xmessagebox.h"
 #include "styledefine.h"
 #include "setconfig.h"
+#include <dlfcn.h>
 
 #include <QDBusArgument>
 #include <unistd.h>
 #include <pwd.h>
+
+typedef char *LPCTSTR;
+
+typedef struct _API_FV
+{
+    long (*FV_ConnectDev) (LPCTSTR sDev, LPCTSTR sPasswrod);
+    long (*FV_CloseDev) (long lDevHandle);
+    long (*FV_SendCmdPacket) (long lDevHandle, long lCmd, LPCTSTR sData);
+
+} FVAPI_t, *pFVAPI_t;
+static FVAPI_t m_FVAPI;
+static long s_devHd = 0;
+
+long (*FV_ConnectDev) (LPCTSTR sDev, LPCTSTR sPasswrod);
+long (*FV_CloseDev) (long lDevHandle);
+long (*FV_SendCmdPacket) (long lDevHandle, long lCmd, LPCTSTR sData);
+
+static void* GetFVAPI(void *pSoHandle, const char* sApiName)
+{
+    char* sError = NULL;
+    void* pApi = NULL;
+
+    if(pSoHandle == NULL || sApiName == NULL) return NULL;
+
+    pApi = dlsym(pSoHandle, sApiName);
+    sError = dlerror();
+    if(sError != NULL)
+    {
+        //bio_print_error("API:%s ERROR:%s\n", sApiName, sError);
+        return NULL;
+    }
+    return pApi;
+}
+
+static int InitSo(char* sSoFileName)
+{
+    char* sError = NULL;
+    void *pSoHandle = NULL;
+
+    if(sSoFileName == NULL) return -1;
+
+    memset(&m_FVAPI, 0, sizeof(FVAPI_t));
+
+    pSoHandle = dlopen(sSoFileName, RTLD_LAZY);
+    if(pSoHandle == NULL)
+    {
+        sError = dlerror();
+        //bio_print_error("SO:%s ERROR:%s\n", sSoFileName, sError);
+        return -1;
+    }
+
+    m_FVAPI.FV_ConnectDev = (long(*)(LPCTSTR,LPCTSTR))GetFVAPI(pSoHandle, "FV_ConnectDev");
+    m_FVAPI.FV_CloseDev = (long(*)(long))GetFVAPI(pSoHandle, "FV_CloseDev");
+    m_FVAPI.FV_SendCmdPacket = (long(*)(long,long,LPCTSTR))GetFVAPI(pSoHandle, "FV_SendCmdPacket");
+}
 
 enum EnWidgetIndex
 {
@@ -147,6 +204,10 @@ MainWindow::MainWindow(QWidget *parent) :
     bindButtonFinger(ui->btnFinger_9, _FingerStartIndex+9, ui->btnBlood_9);
     bindButtonFinger(ui->btnFinger_10, _FingerStartIndex+10, ui->btnBlood_10);
     ui->labelDeviceStatus->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(ui->labelDeviceStatus->text()));
+
+    connect(qApp, SIGNAL(messageReceived(QString)), this, SLOT(onMessageReceived(QString)));
+
+    InitSo("/usr/lib/libXGComApi.so");
 }
 
 MainWindow::~MainWindow()
@@ -511,6 +572,11 @@ void MainWindow::onVoiceValueChanged(int value)
     SetConfig::setSetValue(_VoiceSet, value);
     m_userManage.QF_soundCtl(value);
 #endif
+}
+
+void MainWindow::onMessageReceived(QString qstrMessage)
+{
+    onShowWindow();
 }
 
 void MainWindow::onStatusChanged(int drvId, int statusType)

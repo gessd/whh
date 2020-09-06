@@ -78,6 +78,9 @@ private slots:
 	//声音大小改变
 	void onVoiceValueChanged(int value);
 
+    //接受单实例消息
+    void onMessageReceived(QString qstrMessage);
+
     //麒麟系统
     QToolButton* getFingerButton(int index);
     //USB
