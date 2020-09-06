@@ -39,8 +39,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_StyledBackground);
     //创建菜单
-    m_pQuitAction = new QAction(tr("退出"), this);
-    m_pShowAction = new QAction(tr("显示"), this);
+    m_pQuitAction = new QAction(QIcon(":/images/title_close.png"), tr("退出"), this);
+    m_pShowAction = new QAction(QIcon(":/images/win.png"), tr("显示"), this);
 
     //创建状态栏
     m_pTrayIconMenu = new QMenu(this);
@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTrayIcon = new QSystemTrayIcon(this);
     m_pTrayIcon->setContextMenu(m_pTrayIconMenu);
 
-    QIcon icon(QIcon(":/images/heart.png"));
+    QIcon icon(QIcon(":/images/win.png"));
     m_pTrayIcon->setIcon(icon);
     setWindowIcon(icon);
     m_pTrayIcon->show();
@@ -113,6 +113,21 @@ MainWindow::MainWindow(QWidget *parent) :
                                           DBUS_INTERFACE,
                                           QDBusConnection::systemBus());
     serviceInterface->setTimeout(2147483647); /* 微秒 */
+ui->stackedWidgetSetSys->setCurrentIndex(0);
+    int nRow = ui->listWidget->count();
+    for(int i=0;i<nRow;i++){
+        QListWidgetItem* item = ui->listWidget->item(i);
+        if(NULL == item) continue;
+        if(0 == i){
+            item->setIcon(QIcon(":/images/action.png"));
+        } else if(1 == i){
+            item->setIcon(QIcon(":/images/account.png"));
+        } else if(2 == i){
+            item->setIcon(QIcon(":/images/language.png"));
+        } else if(3 == i) {
+            item->setIcon(QIcon(":/images/voice.png"));
+        }
+    }
 #ifndef Q_OS_WIN
     ui->listWidget->removeItemWidget(ui->listWidget->item(1));
     ui->stackedWidgetSetSys->removeWidget(ui->stackedWidgetSetSys->widget(1));
