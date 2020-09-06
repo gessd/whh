@@ -1,9 +1,14 @@
-[Desktop Entry]
-Version=x.y
-Name=ProgramName
-Comment=This is my comment
-Exec=/home/alex/Documents/exec.sh
-Icon=/home/alex/Pictures/icon.png
-Terminal=false
-Type=Application
-Categories=Utility;Application;
+if (fvDevHandle <= 0) {
+		return -1;
+	}
+	int ret;
+	unsigned char bData[16] = { 0 };
+	char sData[50] = { 0 };
+
+	sprintf(sData, "20%02X", Sound);
+	ret = FV_SendCmdPacket(fvDevHandle, 0x4B, sData);
+	if(ret == XG_ERR_SUCCESS)
+	{
+		FV_RecvCmdPacket(fvDevHandle, sData, 1000);
+	}
+	return ret*-1;
