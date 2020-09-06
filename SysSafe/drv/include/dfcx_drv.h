@@ -179,6 +179,34 @@ DFCX_DRV_API int soundCtl( int Sound);
 //Led[6]对应6个灯，0=亮灯，1=灭灯
 DFCX_DRV_API int ledCtl(int Led[6]);
 
+/**
+*	获取1:1验证状态
+*	返回0	未启用
+*	返回1	已启用
+*/
+DFCX_DRV_API int get11Status();
+
+/**
+*	设置1:1验证状态
+*	返回0	设置成功
+*	返回<0	设置失败
+*/
+DFCX_DRV_API int set11Status(int status);
+
+/**
+*	获取1:N验证状态
+*	返回0	未启用
+*	返回1	已启用
+*/
+DFCX_DRV_API int get1NStatus();
+
+/**
+*	设置1:N验证状态
+*	返回0	设置成功
+*	返回<0	设置失败
+*/
+DFCX_DRV_API int set1NStatus(int status);
+
 #ifdef __cplusplus
 };
 #endif

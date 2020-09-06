@@ -91,7 +91,11 @@ enum _EnFunctionType
     ft_saveVeinTemp,
     ft_checkOnline,
     ft_soundCtl,
-    ft_ledCtl
+    ft_ledCtl,
+    ft_get11Status,
+    ft_set11Status,
+    ft_get1NStatus,
+    ft_set1NStatus
 };
 struct _StFunParamAndRes
 {
@@ -177,6 +181,10 @@ private:
     void thread_checkOnline();
     void thread_soundCtl();
     void thread_ledCtl();
+    void thread_get11Status();
+    void thread_set11Status();
+    void thread_get1NStatus();
+    void thread_set1NStatus();
 #endif
 private:
     _StFunParamAndRes* m_pFunc;
