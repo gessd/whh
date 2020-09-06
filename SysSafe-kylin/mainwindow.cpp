@@ -116,15 +116,11 @@ MainWindow::MainWindow(QWidget *parent) :
 #ifndef Q_OS_WIN
     ui->listWidget->removeItemWidget(ui->listWidget->item(1));
     ui->stackedWidgetSetSys->removeWidget(ui->stackedWidgetSetSys->widget(1));
+    ui->lineEditMaxTime->setVisible(false);
+    ui->label_2->setVisible(false);
 #else
     ui->labelDeviceStatus->setVisible(fasle);
 #endif
-
-    //设置最大时间输入范围
-    ui->lineEditMaxTime->setValidator(new QIntValidator(1, 1000, this));
-    connect(ui->lineEditMaxTime, SIGNAL(editingFinished()), this, SLOT(onSetMaxTime()));
-    connect(&m_userManage, SIGNAL(timeOutDeviceOffline()), this, SLOT(onTimeOutDeviceOffline()));
-
     //声音事件
     unsigned int nVoice = SetConfig::getSetValue(_VoiceSet, 1).toUInt();
     connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
@@ -506,8 +502,10 @@ void MainWindow::onVoiceValueChanged(int value)
     if(0 > value) value = 0;
     if(value > 15) value = 15;
     ui->labelVoiceNum->setText(tr("音量:")+ QString::number(value));
+#ifdef Q_OS_WIN
     SetConfig::setSetValue(_VoiceSet, value);
     m_userManage.QF_soundCtl(value);
+#endif
 }
 
 void MainWindow::onStatusChanged(int drvId, int statusType)

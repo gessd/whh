@@ -25,6 +25,7 @@
 #define _MaxTimeOutDeviceOffline "Setting/MaxTimeOutDeviceOffline"
 //语言 [0,1,2]和界面对应
 #define _LanguageSet "Setting/Language"
+#define _VoiceSet "Setting/Voice"
 //密码大写字母 1包含 0可以不包含
 #define _PassUpper_  "Password/Upper"
 //密码小写字母 1包含 0可以不包含
