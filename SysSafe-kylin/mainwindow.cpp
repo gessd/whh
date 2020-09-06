@@ -239,6 +239,7 @@ int MainWindow::sysInit()
     argument = variant.value<QDBusArgument>(); /* 解封装，获取QDBusArgument对象 */
     argument >> qlist; /* 使用运算符重载提取 argument 对象里面存储的列表对象 */
 
+    m_pFingerVeinDeviceInfo = NULL;
     for (int i = 0; i < deviceCount; i++) {
         item = qlist[i]; /* 取出一个元素 */
         variant = item.variant(); /* 转为普通QVariant对象 */
@@ -248,13 +249,16 @@ int MainWindow::sysInit()
         argument >> *deviceInfo; /* 提取最终的 DeviceInfo 结构体 */
 
         if(BIOTYPE_FINGERVEIN == deviceInfo->biotype){
-            if(_DeviceId_ == deviceInfo->device_id){
+            if(deviceInfo->device_shortname.contains(_DeviceName_)){
                 qDebug()<<"---device "<<i<<deviceInfo<<deviceInfo->device_id<<
                           deviceInfo->device_shortname<<deviceInfo->device_fullname<<deviceInfo->biotype;
                 m_pFingerVeinDeviceInfo = deviceInfo;
+                m_nDeviceId = m_pFingerVeinDeviceInfo->device_id;
             }
         }
     }
+    ui->labelDeviceStatus->setVisible(false);
+    ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(true);
     //无设备或设备被禁用
     if(NULL == m_pFingerVeinDeviceInfo || m_pFingerVeinDeviceInfo->driver_enable <= 0 || m_pFingerVeinDeviceInfo->device_available <=0) {
         ui->labelDeviceStatus->setVisible(true);
@@ -275,7 +279,7 @@ void MainWindow::showFingerInfo()
     ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
 
     //获取已录入指静脉信息
-    int drvId = _DeviceId_;
+    int drvId = m_nDeviceId;
     int uid = getuid();
     int idxStart = 0;
     int idxEnd = -1;
@@ -440,7 +444,7 @@ void MainWindow::onBtnFingerClicked()
 
 void MainWindow::onBtnAddVeinClicked()
 {
-    int drvId = _DeviceId_;
+    int drvId = m_nDeviceId;
     int uid = getuid();
     int idx = m_pCurrenFingerButton->property(_ButtonFingerIndex).toInt();
     QString idxName = QString::number(idx);
@@ -459,7 +463,7 @@ void MainWindow::onBtnAddVeinClicked()
 
 void MainWindow::onBtnFingerRemoveClicked()
 {
-    int drvId = _DeviceId_;
+    int drvId = m_nDeviceId;
     int uid = getuid();
     int idxStart = m_pCurrenFingerButton->property(_ButtonFingerIndex).toInt();
     int idxEnd = -1;
@@ -479,7 +483,7 @@ void MainWindow::onBtnFingerRemoveClicked()
 //信息验证
 void MainWindow::onBtnFingerChecked()
 {
-    int drvId = _DeviceId_;
+    int drvId = m_nDeviceId;
     int uid = getuid();
     int idx = m_pCurrenFingerButton->property(_ButtonFingerIndex).toInt();
     QList<QVariant> args;
@@ -549,9 +553,10 @@ QToolButton *MainWindow::getFingerButton(int index)
 
 void MainWindow::onUSBDeviceHotPlug(int drvid, int action, int devNumNow)
 {
-    if(_DeviceId_ != drvid) return;
+    //if(_DeviceId_ != drvid) return;
     sysInit();
     showFingerInfo();
+    /*
     if(action <=0 || devNumNow <= 0){
         ui->labelDeviceStatus->setVisible(true);
         ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(false);
@@ -560,6 +565,7 @@ void MainWindow::onUSBDeviceHotPlug(int drvid, int action, int devNumNow)
         ui->labelDeviceStatus->setVisible(false);
         ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(true);
     }
+    */
 }
 
 int setSound(int Sound)
@@ -606,7 +612,8 @@ void MainWindow::onMessageReceived(QString qstrMessage)
 
 void MainWindow::onStatusChanged(int drvId, int statusType)
 {
-    if(_DeviceId_ != drvId) return;
+    return;
+    //if(_DeviceId_ != drvId) return;
     if(3 == statusType) {
         //设备被禁用
         ui->labelDeviceStatus->setVisible(true);
