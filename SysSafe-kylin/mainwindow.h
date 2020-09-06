@@ -75,6 +75,8 @@ private slots:
     void onTimeOutOperation();
     //设备长时间离线
     void onTimeOutDeviceOffline();
+	//声音大小改变
+	void onVoiceValueChanged(int value);
 
     //麒麟系统
     QToolButton* getFingerButton(int index);

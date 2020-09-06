@@ -113,11 +113,22 @@ MainWindow::MainWindow(QWidget *parent) :
                                           DBUS_INTERFACE,
                                           QDBusConnection::systemBus());
     serviceInterface->setTimeout(2147483647); /* 微秒 */
+#ifndef Q_OS_WIN
+    ui->listWidget->removeItemWidget(ui->listWidget->item(1));
+    ui->stackedWidgetSetSys->removeWidget(ui->stackedWidgetSetSys->widget(1));
+#else
+    ui->labelDeviceStatus->setVisible(fasle);
+#endif
 
-    connect(serviceInterface, SIGNAL(USBDeviceHotPlug(int, int, int)),
-            this, SLOT(onUSBDeviceHotPlug(int,int,int)));
-    connect(serviceInterface, SIGNAL(StatusChanged(int,int)),
-            this, SLOT(onStatusChanged(int,int)));
+    //设置最大时间输入范围
+    ui->lineEditMaxTime->setValidator(new QIntValidator(1, 1000, this));
+    connect(ui->lineEditMaxTime, SIGNAL(editingFinished()), this, SLOT(onSetMaxTime()));
+    connect(&m_userManage, SIGNAL(timeOutDeviceOffline()), this, SLOT(onTimeOutDeviceOffline()));
+
+    //声音事件
+    unsigned int nVoice = SetConfig::getSetValue(_VoiceSet, 1).toUInt();
+    connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
+    ui->horizontalSliderVoice->setValue(nVoice);
 
     //注册自定义数据类型
     registerCustomTypes();
@@ -490,6 +501,15 @@ void MainWindow::onUSBDeviceHotPlug(int drvid, int action, int devNumNow)
     }
 }
 
+void MainWindow::onVoiceValueChanged(int value)
+{
+    if(0 > value) value = 0;
+    if(value > 15) value = 15;
+    ui->labelVoiceNum->setText(tr("音量:")+ QString::number(value));
+    SetConfig::setSetValue(_VoiceSet, value);
+    m_userManage.QF_soundCtl(value);
+}
+
 void MainWindow::onStatusChanged(int drvId, int statusType)
 {
     if(_DeviceId_ != drvId) return;
@@ -615,7 +635,7 @@ void MainWindow::showVeinAddWidget(QToolButton *button)
     ui->btnFingerCheck->setVisible(false);
     ui->btnAddVein->setVisible(true);
     _FingerProgress(0*_MaxProgressBar);
-
+    ui->labelMessage->setText(tr("录入"));
     m_pCurrenFingerButton = button;
     ui->stackedWidget->setCurrentIndex(EnCreateUserWidgetIndex);
 }
@@ -628,7 +648,7 @@ void MainWindow::showVeinCompareWidget(QToolButton *button)
     ui->btnFingerCheck->setVisible(true);
     ui->btnAddVein->setVisible(false);
     _FingerProgress(0*_MaxProgressBar);
-
+    ui->labelMessage->setText(tr("验证"));
     m_pCurrenFingerButton = button;
     ui->stackedWidget->setCurrentIndex(EnCreateUserWidgetIndex);
 }
