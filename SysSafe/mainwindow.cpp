@@ -9,6 +9,7 @@
 #include "xmessagebox.h"
 #include "styledefine.h"
 #include "setconfig.h"
+#include "wow64apiset.h"
 
 enum EnWidgetIndex
 {
@@ -17,6 +18,26 @@ enum EnWidgetIndex
     EnCreateUserWidgetIndex,
     EnSysSetWidgetIndex
 };
+
+BOOL Is64BitSystem()
+{
+    typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
+    PGNSI pGNSI;
+    SYSTEM_INFO si;
+    ZeroMemory(&si, sizeof(SYSTEM_INFO));
+    pGNSI =(PGNSI) GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetNativeSystemInfo");
+    if (pGNSI)
+    {
+        pGNSI(&si);
+
+        if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 ||
+                si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_IA64)
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -125,7 +146,7 @@ MainWindow::MainWindow(QWidget *parent) :
         setStyleSheet(qstrQss);
         qss.close();
     }
-
+    ui->stackedWidgetSetSys->setCurrentIndex(0);
     int nRow = ui->listWidget->count();
     for(int i=0;i<nRow;i++){
         QListWidgetItem* item = ui->listWidget->item(i);
@@ -140,6 +161,12 @@ MainWindow::MainWindow(QWidget *parent) :
             item->setIcon(QIcon(":/images/voice.png"));
         }
     }
+#ifndef Q_OS_WIN
+    ui->listWidget->removeItemWidget(ui->listWidget->item(1));
+    ui->stackedWidgetSetSys->removeWidget(ui->stackedWidgetSetSys->widget(1));
+#else
+    ui->labelDeviceStatus->setVisible(fasle);
+#endif
 
     //设置最大时间输入范围
     ui->lineEditMaxTime->setValidator(new QIntValidator(1, 1000, this));
@@ -148,17 +175,39 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //声音事件
     unsigned int nVoice = SetConfig::getSetValue(_VoiceSet, 1).toUInt();
-    ui->horizontalSliderVoice->setValue(nVoice);
     connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
+    ui->horizontalSliderVoice->setValue(nVoice);
 
-    QSettings setOneCheck(_RegeditPathOneCheck_, QSettings::NativeFormat);
-    if(setOneCheck.value(".").toString().contains(_RegeditPathOneCheck_)){
-        ui->checkBoxOneCheck->setChecked(true);
+    if(Is64BitSystem()){
+        //#ifdef Q_OS_WIN64
+        PVOID OldValue = NULL;
+        int nres = Wow64DisableWow64FsRedirection(&OldValue); //取消文件重定向
+        qDebug()<<"win system 64"<<nres;
+        //#endif
     }
+    qDebug()<<"----"<<Is64BitSystem()<<QSysInfo::WordSize;
+
+    QSettings test("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\Credential Providers", QSettings::NativeFormat);
+    test.setValue("abcdefwhhhh","testtesttest");
+
+    QSettings setOneCheck("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\Credential Providers", QSettings::NativeFormat);
+    //QSettings setOneCheck(_RegeditPathOneCheck_, QSettings::NativeFormat);
+    //QVariant var = setOneCheck.value(".");
+    QStringList list = setOneCheck.allKeys();
+    qDebug()<<"aaaaaa";
+    qDebug()<<"----  "<<list.count();
+    foreach(QString key, list){
+        qDebug()<<"--- key"<<key;
+    }
+
+    //if(var.toString().contains(_RegeditPathOneCheck_)){
+    //    ui->checkBoxOneCheck->setChecked(true);
+    //}
     QSettings setNCheck(_RegeditPathNCheck_, QSettings::NativeFormat);
     if(setNCheck.value(".").toString().contains(_RegeditValueNCheck_)){
         ui->checkBoxNCheck->setChecked(true);
     }
+
     connect(ui->checkBoxOneCheck, SIGNAL(clicked()), this, SLOT(onOneCheckClicked()));
     connect(ui->checkBoxNCheck, SIGNAL(clicked()), this, SLOT(onNCheckClicked()));
 
@@ -710,7 +759,8 @@ void MainWindow::onTimeOutDeviceOffline()
 void MainWindow::onVoiceValueChanged(int value)
 {
     if(0 > value) value = 0;
-    if(value > 10) value = 10;
+    if(value > 15) value = 15;
+    ui->labelVoiceNum->setText(tr("音量:")+ QString::number(value));
     SetConfig::setSetValue(_VoiceSet, value);
     m_userManage.QF_soundCtl(value);
 }
@@ -756,7 +806,7 @@ void MainWindow::onReadMessage()
 void MainWindow::onReconnection()
 {
     if(false == m_pLocalSocket) return;
-    qDebug()<<"---- start connect server"<<QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
+    //qDebug()<<"---- start connect server"<<QDateTime::currentDateTime().toString("hh:mm:ss.zzz");
     m_pLocalSocket->connectToServer(_LocasServerName_);
     m_pLocalSocket->waitForConnected();
 }

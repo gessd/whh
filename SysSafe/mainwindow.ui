@@ -409,7 +409,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
        <rect>
         <x>10</x>
         <y>40</y>
-        <width>601</width>
+        <width>411</width>
         <height>41</height>
        </rect>
       </property>
@@ -779,6 +779,19 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
        <string/>
       </property>
      </widget>
+     <widget class="QLabel" name="labelDeviceStatus">
+      <property name="geometry">
+       <rect>
+        <x>430</x>
+        <y>40</y>
+        <width>291</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>设备无法使用，请检查</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="createUserWidget">
      <widget class="QProgressBar" name="progressBarFinger">
@@ -953,7 +966,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
       </property>
       <property name="styleSheet">
        <string notr="true">QListWidget::item{
-    height:55px;
+    height:45px;
 }
 QTableWidget::item:selected{
     background-color:rgb(240,241,247);
@@ -1254,12 +1267,12 @@ QTableWidget::item:selected{
          <rect>
           <x>20</x>
           <y>80</y>
-          <width>241</width>
+          <width>311</width>
           <height>22</height>
          </rect>
         </property>
         <property name="maximum">
-         <number>10</number>
+         <number>15</number>
         </property>
         <property name="pageStep">
          <number>1</number>
@@ -1269,6 +1282,19 @@ QTableWidget::item:selected{
         </property>
         <property name="tickPosition">
          <enum>QSlider::TicksAbove</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelVoiceNum">
+        <property name="geometry">
+         <rect>
+          <x>340</x>
+          <y>80</y>
+          <width>41</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>音量</string>
         </property>
        </widget>
       </widget>
