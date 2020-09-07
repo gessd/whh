@@ -132,6 +132,7 @@ private:
     //指静脉设备信息
     DeviceInfo* m_pFingerVeinDeviceInfo;
     int m_nDeviceId;
+    unsigned int m_nDBUSProgress;
 };
 
 #endif // MAINWINDOW_H

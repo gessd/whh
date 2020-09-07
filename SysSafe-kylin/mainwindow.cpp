@@ -207,6 +207,8 @@ MainWindow::MainWindow(QWidget *parent) :
     unsigned int nVoice = SetConfig::getSetValue(_VoiceSet, 1).toUInt();
     connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
     ui->horizontalSliderVoice->setValue(nVoice);
+
+    m_nDBUSProgress = 0;
 }
 
 MainWindow::~MainWindow()
@@ -455,10 +457,11 @@ void MainWindow::onBtnAddVeinClicked()
                                                     SLOT(enrollCallBack(const QDBusMessage &)),
                                                     SLOT(errorCallBack(const QDBusError &)));
     if(false == bCall) {
-        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000").arg(tr("录入操作错误"))));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("录入操作错误")));
         ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
         return;
     }
+    m_nDBUSProgress = 1;
     _FingerProgress(_MaxProgressBar*0.1);
     ui->labelFingerText->setText(tr("正在录入信息"));
 }
@@ -474,7 +477,7 @@ void MainWindow::onBtnFingerRemoveClicked()
     QDBusPendingReply<int> reply = serviceInterface->call("Clean", drvId, uid, idxStart, idxEnd);
     reply.waitForFinished();
     if (reply.isError()) {
-        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000").arg(tr("删除失败")+" "+reply.error().message())));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("删除失败")+" "+reply.error().message()));
         ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
         return;
     }
@@ -499,7 +502,7 @@ void MainWindow::onBtnFingerChecked()
                                                     SLOT(verifyCallBack(const QDBusMessage &)),
                                                     SLOT(errorCallBack(const QDBusError &)));
     if(false == bCall) {
-        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000").arg(tr("验证操作错误"))));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("验证操作错误")));
         ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
         return;
     }
@@ -620,6 +623,10 @@ void MainWindow::onMessageReceived(QString qstrMessage)
 void MainWindow::onStatusChanged(int drvId, int statusType)
 {
     if(m_nDeviceId != drvId) return;
+    if(m_nDBUSProgress>0) {
+        _FingerProgress(_MaxProgressBar*m_nDBUSProgress/10);
+        m_nDBUSProgress++;
+    }
     QDBusMessage notifyReply = serviceInterface->call("GetNotifyMesg", drvId);
     if(notifyReply.type() == QDBusMessage::ErrorMessage) {
         qDebug() << "DBUS: " << notifyReply.errorMessage();
@@ -644,7 +651,7 @@ void MainWindow::enrollCallBack(const QDBusMessage &reply)
         break;
     }
     default:
-        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000").arg(tr("录入失败"))));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("录入失败")));
         break;
     }
     ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
@@ -659,10 +666,10 @@ void MainWindow::verifyCallBack(const QDBusMessage &reply)
         ui->labelFingerText->setText(tr("验证成功"));
         _FingerProgress(1*_MaxProgressBar);
     } else if(result == DBUS_RESULT_NOTMATCH) {
-        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000").arg(tr("验证失败，不匹配"))));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("验证失败，不匹配")));
         _FingerProgress(0.5*_MaxProgressBar);
     } else {
-        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000").arg(tr("验证失败")+" "+handleErrorResult(result))));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("验证失败")+" "+handleErrorResult(result)));
         _FingerProgress(0.5*_MaxProgressBar);
     }
     ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
@@ -683,7 +690,7 @@ void MainWindow::errorCallBack(const QDBusError &error)
     qDebug() << "DBus Error: " << error.message();
     QString qstrErrorMessage = error.message();
     if(!qstrErrorMessage.isEmpty()){
-        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000").arg(qstrErrorMessage)));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(qstrErrorMessage));
     }
     ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
 }
