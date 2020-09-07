@@ -612,17 +612,15 @@ void MainWindow::onMessageReceived(QString qstrMessage)
 
 void MainWindow::onStatusChanged(int drvId, int statusType)
 {
-    return;
-    //if(_DeviceId_ != drvId) return;
-    if(3 == statusType) {
-        //设备被禁用
-        ui->labelDeviceStatus->setVisible(true);
-        ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(false);
-        ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
-    } else {
-        ui->labelDeviceStatus->setVisible(false);
-        ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(true);
+    if(m_nDeviceId != drvId) return;
+    QDBusMessage notifyReply = serviceInterface->call("GetNotifyMesg", drvId);
+    if(notifyReply.type() == QDBusMessage::ErrorMessage) {
+        qDebug() << "DBUS: " << notifyReply.errorMessage();
+        return;
     }
+    QString prompt = notifyReply.arguments().at(0).toString();
+    qDebug() << "---- message:"<<prompt;
+    ui->labelFingerText->setText(prompt);
 }
 
 void MainWindow::enrollCallBack(const QDBusMessage &reply)
