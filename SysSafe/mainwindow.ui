@@ -92,9 +92,9 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
     <widget class="QToolButton" name="btnTitleSet">
      <property name="geometry">
       <rect>
-       <x>580</x>
+       <x>560</x>
        <y>16</y>
-       <width>58</width>
+       <width>51</width>
        <height>24</height>
       </rect>
      </property>
@@ -137,9 +137,9 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
     <widget class="QToolButton" name="btnTitleAbout">
      <property name="geometry">
       <rect>
-       <x>680</x>
+       <x>657</x>
        <y>16</y>
-       <width>58</width>
+       <width>81</width>
        <height>24</height>
       </rect>
      </property>
@@ -147,7 +147,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
       <string>设置</string>
      </property>
      <property name="text">
-      <string>关于</string>
+      <string>关于我们</string>
      </property>
      <property name="icon">
       <iconset>
@@ -161,9 +161,9 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
     <widget class="QToolButton" name="btnTitleHelp">
      <property name="geometry">
       <rect>
-       <x>630</x>
+       <x>610</x>
        <y>16</y>
-       <width>58</width>
+       <width>51</width>
        <height>24</height>
       </rect>
      </property>
@@ -410,11 +410,12 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
         <x>10</x>
         <y>40</y>
         <width>411</width>
-        <height>41</height>
+        <height>51</height>
        </rect>
       </property>
       <property name="text">
-       <string>单击手指对应的按钮进行登记、验证、删除信息。</string>
+       <string>单击手指对应的按钮进行登记、验证、删除信息。
+建议使用左右手食指、中指、无名指进行样本录入，以获得更好体验。</string>
       </property>
      </widget>
      <widget class="QToolButton" name="btnFinger_1">

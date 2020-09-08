@@ -386,7 +386,7 @@ void MainWindow::onBtnTitleHelp()
 
 void MainWindow::onBtnTitleAbout()
 {
-
+    XMessageBox::message(this, tr("关于我们"), tr("东方创芯（北京）数字技术有限公司\n版本：V1.1"));
 }
 
 void MainWindow::onBtnBackMainClicked()
@@ -515,6 +515,11 @@ void MainWindow::onBtnFingerClicked()
     StVein* pVein = m_mapButtonFinger[pButton];
     if(NULL == pVein) {
         qDebug()<<"内部错误，手指按钮没有绑定数据.";
+        return;
+    }
+    int nCheck = m_userManage.QF_checkOnline();
+    if(nCheck <= 0){
+        XMessageBox::information(this, tr("提示"), tr("设备未连接无法操作!"));
         return;
     }
     std::string wstrVeinData = pVein->temp;
