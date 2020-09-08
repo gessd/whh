@@ -624,7 +624,7 @@ void MainWindow::onStatusChanged(int drvId, int statusType)
 {
     if(m_nDeviceId != drvId) return;
     if(m_nDBUSProgress>0) {
-        _FingerProgress(_MaxProgressBar*m_nDBUSProgress/10);
+        _FingerProgress(m_nDBUSProgress*33);
         m_nDBUSProgress++;
     }
     QDBusMessage notifyReply = serviceInterface->call("GetNotifyMesg", drvId);
