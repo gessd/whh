@@ -209,6 +209,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->horizontalSliderVoice->setValue(nVoice);
 
     m_nDBUSProgress = 0;
+    ops = IDLE;
 }
 
 MainWindow::~MainWindow()
@@ -462,6 +463,7 @@ void MainWindow::onBtnAddVeinClicked()
         return;
     }
     m_nDBUSProgress = 1;
+	ops = ENROLL;
     _FingerProgress(_MaxProgressBar*0.1);
     ui->labelFingerText->setText(tr("正在录入信息"));
 }
@@ -623,9 +625,12 @@ void MainWindow::onMessageReceived(QString qstrMessage)
 void MainWindow::onStatusChanged(int drvId, int statusType)
 {
     if(m_nDeviceId != drvId) return;
-    if(m_nDBUSProgress>0) {
-        _FingerProgress(m_nDBUSProgress*33);
-        m_nDBUSProgress++;
+
+    if (ops == ENROLL) {
+	    if(m_nDBUSProgress>0) {
+		    _FingerProgress((m_nDBUSProgress-1)*33);
+		    m_nDBUSProgress++;
+	    }
     }
     QDBusMessage notifyReply = serviceInterface->call("GetNotifyMesg", drvId);
     if(notifyReply.type() == QDBusMessage::ErrorMessage) {
@@ -655,6 +660,7 @@ void MainWindow::enrollCallBack(const QDBusMessage &reply)
         break;
     }
     ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
+    ops = IDLE;
 }
 
 void MainWindow::verifyCallBack(const QDBusMessage &reply)

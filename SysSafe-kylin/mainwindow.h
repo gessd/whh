@@ -133,6 +133,7 @@ private:
     DeviceInfo* m_pFingerVeinDeviceInfo;
     int m_nDeviceId;
     unsigned int m_nDBUSProgress;
+    enum OPS{IDLE, ENROLL, VERIFY, SEARCH} ops;
 };
 
 #endif // MAINWINDOW_H
