@@ -61,7 +61,16 @@ XMessageBox::StandardButton XMessageBox::warning(QWidget * parent, const QString
     XMessageBox::StandardButton stand = XMessageBox::No;
     box.setStyleSheet(_MessageBoxStyle_);
     if (QDialog::Accepted == box.exec()) stand = XMessageBox::Yes;
-	return stand;
+    return stand;
+}
+
+XMessageBox::StandardButton XMessageBox::message(QWidget *parent, const QString &title, const QString &text)
+{
+    XMessageBox box(parent, title, text, QPixmap());
+    XMessageBox::StandardButton stand = XMessageBox::No;
+    box.setStyleSheet(_MessageBoxStyle_);
+    if (QDialog::Accepted == box.exec()) stand = XMessageBox::Yes;
+    return stand;
 }
 
 bool XMessageBox::eventFilter(QObject * watched, QEvent * event)

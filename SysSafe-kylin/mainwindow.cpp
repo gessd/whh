@@ -385,7 +385,7 @@ void MainWindow::onBtnTitleHelp()
 
 void MainWindow::onBtnTitleAbout()
 {
-
+    XMessageBox::message(this, tr("关于我们"), tr("东方创芯（北京）数字技术有限公司\n版本：V1.1"));
 }
 
 void MainWindow::onBtnBackMainClicked()
