@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=com.dfcx.df100.VFingerprint
+Exec=/usr/bin/df100-service
+User=root
+
