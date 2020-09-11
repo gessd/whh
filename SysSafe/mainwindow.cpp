@@ -446,6 +446,12 @@ void MainWindow::onBtnLogonClicked()
         qDebug()<<"添加用户失败"<<QString::fromStdWString(wstrUserName)<<QString::fromStdWString(wstrPass);
         return;
     }
+    int nGet = m_userManage.QF_userGet(&m_stUserData);
+    if(0 > nGet){
+        ui->labelPassMassage->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("用户信息更新失败，无法登陆")));
+        qDebug()<<"用户信息更新失败"<<QString::fromStdWString(wstrUserName)<<QString::fromStdWString(wstrPass);
+        return;
+    }
     StUserEx* pUserEx = NULL;
 #ifdef _USER_DRV_API_
     pUserEx = m_userManage.QF_getUserInfoByUserName(m_stUserData.user_name);
