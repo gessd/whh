@@ -29,9 +29,6 @@
 #define DBUS_PATH "/com/deepin/daemon/Authenticate/Fingerprint"
 #define DBUS_INTERFACE "com.deepin.daemon.Authenticate.Fingerprint"
 
-//b#define FD_DBUS_SERVICE     "org.freedesktop.DBus"
-//b#define FD_DBUS_PATH        "/org/freedesktop/DBus"
-//b#define FD_DBUS_INTERFACE   "org.freedesktop.DBus"
 
 enum BioType {
 	BIOTYPE_FINGERPRINT,

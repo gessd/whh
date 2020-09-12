@@ -11,6 +11,7 @@
 #include <QtGui/QMovie>
 
 #include "customtype.h"
+#include "styledefine.h"
 
 namespace Ui {
 class MainWindow;
@@ -95,6 +96,15 @@ private slots:
     void errorCallback(QDBusError error);
     //指静脉信息列表
     void showFeaturesCallback(QDBusMessage callbackReply);
+
+    //UOS
+    //发出录入过程中的状态消息
+    void onEnrollStatus(QString id, int code, QString msg);
+    //发出认证过程中的状态消息
+    void onVerifyStatus(QString id, int code, QString msg);
+    //发出手指按下的状态消息
+    void onTouch(QString id, bool pressed);
+    void onsiSendMessage(int type, int code, QString msg);
 private:
     //初始主页手指按钮
     void initFingerData(QToolButton* button, int index);
@@ -127,6 +137,7 @@ private:
     int deviceCount;
     //指静脉设备信息
     DeviceInfo* m_pFingerVeinDeviceInfo;
+    QString m_qstrUserId;
 };
 
 #endif // MAINWINDOW_H

@@ -62,5 +62,16 @@ enum _ActionDeviceOffline
 #define _ButtonFingerIndex "_fingerinde_"
 #define _FingerButtonIsInfo "_fingerinfo_"
 
+//UOS系统使用
+//指静脉DBUS代理服务
+#define _ProxyDbusService_   "com.deepin.daemon.Authenticate"
+#define _ProxyDbusPath_      "/com/deepin/daemon/Authenticate/Fingerprint"
+#define _ProxyDbusInterface_ "com.deepin.daemon.Authenticate.Fingerprint"
+#define _ProxyDbusFuncitonName_  "SetDefaultDevice"
+
+//指静脉DUBS接口服务
+#define _FingerDbusService_  "com.dfcx.df100.VFingerprint"
+#define _FingerDbuPath_      "/com/dfcx/df100/VFingerprint"
+#define _FingerDbuInterface_ "com.dfcx.df100.VFingerprint"
 
 #endif // _STYLEDEFINE_H_
