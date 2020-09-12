@@ -386,7 +386,7 @@ void MainWindow::onBtnTitleHelp()
 
 void MainWindow::onBtnTitleAbout()
 {
-    XMessageBox::message(this, tr("关于我们"), tr("东方创芯（北京）数字技术有限公司\n版本：V1.1"));
+    XMessageBox::message(this, tr("关于我们"), tr("东方创芯（北京）数字技术有限公司\n版本：V3.2.2"));
 }
 
 void MainWindow::onBtnBackMainClicked()
@@ -440,16 +440,11 @@ void MainWindow::onBtnLogonClicked()
     wcscpy(m_stUserData.passwd, wstrPass.c_str());
 #endif
     qDebug()<<"更新用户信息";
+
     int nAdd = m_userManage.QF_userAdd(&m_stUserData);
     if(0 > nAdd){
         ui->labelPassMassage->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("用户信息创建失败，无法登陆")));
         qDebug()<<"添加用户失败"<<QString::fromStdWString(wstrUserName)<<QString::fromStdWString(wstrPass);
-        return;
-    }
-    int nGet = m_userManage.QF_userGet(&m_stUserData);
-    if(0 > nGet){
-        ui->labelPassMassage->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("用户信息更新失败，无法登陆")));
-        qDebug()<<"用户信息更新失败"<<QString::fromStdWString(wstrUserName)<<QString::fromStdWString(wstrPass);
         return;
     }
     StUserEx* pUserEx = NULL;
@@ -461,6 +456,7 @@ void MainWindow::onBtnLogonClicked()
         qDebug()<<"用户信息获取失败，无法登陆"<<QString::fromStdWString(wstrUserName)<<QString::fromStdWString(wstrPass);
         return;
     }
+    m_stUserData.user_id = pUserEx->user_id;
     StVeinEx* pVeinEx = pUserEx->vein;
     while (pVeinEx) {
         StVein vein;
