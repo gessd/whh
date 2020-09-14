@@ -264,7 +264,15 @@ void MainWindow::showFingerInfo()
     }
     QStringList list = response.arguments().takeFirst().toStringList();
     qDebug()<<"---- fingerlist "<<list;
-    return;
+    foreach(QString qstrName, list){
+        //指静脉信息绑定到界面按钮
+        QToolButton* pCurrentButton = getFingerButton(qstrName.toInt());
+        if(pCurrentButton){
+            setButtonFingerInfo(pCurrentButton, true);
+        } else {
+            setButtonFingerInfo(pCurrentButton, false);
+        }
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
