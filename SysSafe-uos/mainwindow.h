@@ -81,7 +81,6 @@ private slots:
     //接受单实例消息
     void onMessageReceived(QString qstrMessage);
 
-    //麒麟系统
     QToolButton* getFingerButton(int index);
     //录入回调
     void enrollCallBack(const QDBusMessage &reply);
@@ -89,8 +88,6 @@ private slots:
     void verifyCallBack(const QDBusMessage &reply);
     //错误信息
     void errorCallBack(const QDBusError &error);
-    //获取列表时错误信息
-    void errorCallback(QDBusError error);
     //指静脉信息列表
     void showFeaturesCallback(QDBusMessage callbackReply);
 

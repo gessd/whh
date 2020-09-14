@@ -5,6 +5,11 @@
 #include <QtCore/QModelIndex>
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonValue>
+#include <QtCore/QJsonParseError>
 #include <QtWidgets/QApplication>
 #include "xmessagebox.h"
 #include "styledefine.h"
@@ -234,7 +239,7 @@ int MainWindow::sysInit()
     message <<_DeviceName_;
     QDBusMessage response = QDBusConnection::systemBus().call(message);
     if (response.type() != QDBusMessage::ReplyMessage){
-        qDebug() << "---- error "<<response.type()<<response.errorName()<<response.errorMessage();
+        qDebug() << "---- error SetDefaultDevice"<<response.type()<<response.errorName()<<response.errorMessage();
         return -1;
     }
     return 0;
@@ -254,7 +259,7 @@ void MainWindow::showFingerInfo()
     message <<m_qstrUserId.toUtf8().data();
     QDBusMessage response = QDBusConnection::systemBus().call(message);
     if (response.type() != QDBusMessage::ReplyMessage){
-        qDebug() << "---- error "<<response.type()<<response.errorName()<<response.errorMessage();
+        qDebug() << "---- error ListFingers"<<response.type()<<response.errorName()<<response.errorMessage();
         return;
     }
     QStringList list = response.arguments().takeFirst().toStringList();
@@ -681,12 +686,17 @@ void MainWindow::errorCallBack(const QDBusError &error)
     if(!qstrErrorMessage.isEmpty()){
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(qstrErrorMessage));
     }
-    ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
-}
 
-void MainWindow::errorCallback(QDBusError error)
-{
-    qDebug() << "DBus Error: " << error.message();
+    //录入成功或失败以后需要解除设备占用
+    QDBusMessage message = QDBusMessage::createMethodCall(_Uos_DBUS_SERVICE, _Uos_DBUS_PATH,
+                                                          _Uos_DBUS_INTERFACE, "Claim");
+    message <<m_qstrUserId.toUtf8().data()<<false;//解除设备占用
+    QDBusMessage response = QDBusConnection::systemBus().call(message);
+    if (response.type() != QDBusMessage::ReplyMessage){
+        qDebug() << "---- error Claim "<<response.type()<<response.errorName()<<response.errorMessage();
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("释放设备独占失败")));
+    }
+    ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
 }
 
 void MainWindow::showFeaturesCallback(QDBusMessage callbackReply)
@@ -745,12 +755,26 @@ void MainWindow::onEnrollStatus(QString id, int code, QString msg)
     msg 为空
     **/
     qDebug()<<"---- onEnrollStatus"<<id<<code<<msg;
+    QJsonObject jsonObj;
+    if(!msg.isEmpty()){
+        QJsonParseError *error=new QJsonParseError;
+        QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8(), error);
+        if(error->error != QJsonParseError::NoError){
+            jsonObj = doc.object();
+        }
+    }
     switch (code) {
     case 0:
         break;
     case 1:
         break;
     case 2:
+    {
+        if(!jsonObj.isEmpty() && jsonObj.contains("progress")){
+             int nProgress= jsonObj.take("progress").toInt();
+             if(nProgress > 0) _FingerProgress(nProgress);
+        }
+    }
         break;
     case 3:
         break;
@@ -761,7 +785,6 @@ void MainWindow::onEnrollStatus(QString id, int code, QString msg)
 
 void MainWindow::onVerifyStatus(QString id, int code, QString msg)
 {
-    qDebug()<<"---- onVerifyStatus"<<id<<code<<msg;
     /**
     状态码的详细说明如下:
     code 0 Match 匹配,之后结束认证
@@ -782,6 +805,15 @@ void MainWindow::onVerifyStatus(QString id, int code, QString msg)
     code 4 Disconnected 与设备失联，之后不要对设备进行任何操作
         msg 为空
     **/
+    qDebug()<<"---- onVerifyStatus"<<id<<code<<msg;
+    QJsonObject jsonObj;
+    if(!msg.isEmpty()){
+        QJsonParseError *error=new QJsonParseError;
+        QJsonDocument doc = QJsonDocument::fromJson(msg.toUtf8(), error);
+        if(error->error != QJsonParseError::NoError){
+            jsonObj = doc.object();
+        }
+    }
     switch (code) {
     case 0:
         break;
