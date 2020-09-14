@@ -65,5 +65,15 @@ enum _ActionDeviceOffline
 #define _ButtonFingerIndex "_fingerinde_"
 #define _FingerButtonIsInfo "_fingerinfo_"
 
+//UOS Sys
+#define _UosProxy_DBUS_SERVICE    "com.deepin.daemon.Authenticate"
+#define _UosProxy_DBUS_PATH       "/com/deepin/daemon/Authenticate/Fingerprint"
+#define _UosProxy_DBUS_INTERFACE  "com.deepin.daemon.Authenticate.Fingerprint"
+
+//#define _UseVoice_
+#define _Uos_DBUS_SERVICE    "com.dfcx.df100.VFingerprint"
+#define _Uos_DBUS_PATH       "/com/dfcx/df100/VFingerprint"
+#define _Uos_DBUS_INTERFACE  "com.dfcx.df100.VFingerprint"
+
 
 #endif // _STYLEDEFINE_H_

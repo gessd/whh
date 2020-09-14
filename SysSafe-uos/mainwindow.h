@@ -83,23 +83,25 @@ private slots:
 
     //麒麟系统
     QToolButton* getFingerButton(int index);
-    //USB
-    void onUSBDeviceHotPlug(int drvid, int action, int devNumNow);
-    //设备
-    void onStatusChanged(int drvId, int statusType);
     //录入回调
     void enrollCallBack(const QDBusMessage &reply);
     //验证回调
     void verifyCallBack(const QDBusMessage &reply);
-    //搜索回调
-    void searchCallBack(const QDBusMessage &reply);
-    void StopOpsCallBack(const QDBusMessage &reply);
     //错误信息
     void errorCallBack(const QDBusError &error);
     //获取列表时错误信息
     void errorCallback(QDBusError error);
     //指静脉信息列表
     void showFeaturesCallback(QDBusMessage callbackReply);
+
+    //统信UOS
+    //发出录入过程中的状态消息
+    void onEnrollStatus(QString id, int code, QString msg);
+    //发出认证过程中的状态消息
+    void onVerifyStatus(QString id, int code, QString msg);
+    //发出手指按下的状态消息
+    void onTouch(QString id, bool pressed);
+    void onsiSendMessage(int type, int code, QString msg);
 private:
     //初始主页手指按钮
     void initFingerData(QToolButton* button, int index);
@@ -134,6 +136,7 @@ private:
     int m_nDeviceId;
     unsigned int m_nDBUSProgress;
     enum OPS{IDLE, ENROLL, VERIFY, SEARCH} ops;
+    QString m_qstrUserId;
 };
 
 #endif // MAINWINDOW_H
