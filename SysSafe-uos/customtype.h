@@ -25,10 +25,13 @@
 #define ADMIN_UID 0
 
 #define SERVICE "biometric-authentication.service"
-#define DBUS_SERVICE "ocom.deepin.daemon.Authenticate"
-#define DBUS_PATH "/com/deepin/daemon/Authenticate/Fingerprint"
-#define DBUS_INTERFACE "com.deepin.daemon.Authenticate.Fingerprint"
+#define DBUS_SERVICE "org.ukui.Biometric"
+#define DBUS_PATH "/org/ukui/Biometric"
+#define DBUS_INTERFACE "org.ukui.Biometric"
 
+#define FD_DBUS_SERVICE     "org.freedesktop.DBus"
+#define FD_DBUS_PATH        "/org/freedesktop/DBus"
+#define FD_DBUS_INTERFACE   "org.freedesktop.DBus"
 
 enum BioType {
 	BIOTYPE_FINGERPRINT,

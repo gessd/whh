@@ -36,5 +36,7 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui \
     xmessagebox.ui
 
+LIBS += -ldl
+
 RESOURCES += \
     syssafe.qrc

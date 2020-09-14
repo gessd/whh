@@ -25,6 +25,7 @@
 #define _MaxTimeOutDeviceOffline "Setting/MaxTimeOutDeviceOffline"
 //语言 [0,1,2]和界面对应
 #define _LanguageSet "Setting/Language"
+#define _VoiceSet "Setting/Voice"
 //密码大写字母 1包含 0可以不包含
 #define _PassUpper_  "Password/Upper"
 //密码小写字母 1包含 0可以不包含
@@ -35,6 +36,8 @@
 #define _PassSpecial_  "Password/Special"
 //密码长度
 #define _PassLength_  "Password/Length"
+//错误信息颜色
+#define _MessageErrorColor "MessageColor/Error"
 ////============================================////
 
 //无动作时间 秒
@@ -53,25 +56,14 @@ enum _ActionDeviceOffline
 
 //kylin sys
 //设备名称
-#define _DeviceName_ "df100"
+#define _DeviceName_ "fk770"
 //设备ID 不可变，判断是否是程序要用的设备
-#define _DeviceId_ 123
+//#define _DeviceId_ 123
 
 //指静脉信息起始ID
 #define _FingerStartIndex 1000
 #define _ButtonFingerIndex "_fingerinde_"
 #define _FingerButtonIsInfo "_fingerinfo_"
 
-//UOS系统使用
-//指静脉DBUS代理服务
-#define _ProxyDbusService_   "com.deepin.daemon.Authenticate"
-#define _ProxyDbusPath_      "/com/deepin/daemon/Authenticate/Fingerprint"
-#define _ProxyDbusInterface_ "com.deepin.daemon.Authenticate.Fingerprint"
-#define _ProxyDbusFuncitonName_  "SetDefaultDevice"
-
-//指静脉DUBS接口服务
-#define _FingerDbusService_  "com.dfcx.df100.VFingerprint"
-#define _FingerDbuPath_      "/com/dfcx/df100/VFingerprint"
-#define _FingerDbuInterface_ "com.dfcx.df100.VFingerprint"
 
 #endif // _STYLEDEFINE_H_

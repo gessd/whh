@@ -11,7 +11,6 @@
 #include <QtGui/QMovie>
 
 #include "customtype.h"
-#include "styledefine.h"
 
 namespace Ui {
 class MainWindow;
@@ -76,6 +75,11 @@ private slots:
     void onTimeOutOperation();
     //设备长时间离线
     void onTimeOutDeviceOffline();
+	//声音大小改变
+	void onVoiceValueChanged(int value);
+
+    //接受单实例消息
+    void onMessageReceived(QString qstrMessage);
 
     //麒麟系统
     QToolButton* getFingerButton(int index);
@@ -96,15 +100,6 @@ private slots:
     void errorCallback(QDBusError error);
     //指静脉信息列表
     void showFeaturesCallback(QDBusMessage callbackReply);
-
-    //UOS
-    //发出录入过程中的状态消息
-    void onEnrollStatus(QString id, int code, QString msg);
-    //发出认证过程中的状态消息
-    void onVerifyStatus(QString id, int code, QString msg);
-    //发出手指按下的状态消息
-    void onTouch(QString id, bool pressed);
-    void onsiSendMessage(int type, int code, QString msg);
 private:
     //初始主页手指按钮
     void initFingerData(QToolButton* button, int index);
@@ -128,7 +123,6 @@ private:
     QAction *m_pQuitAction;
     QAction *m_pShowAction;
     QToolButton* m_pCurrenFingerButton; //当前手指按钮,指静脉信息管理使用
-    QButtonGroup* m_pGroupAction;
     QButtonGroup* m_pGroupLanguage;
     QMovie* m_pMovieFinger;
 
@@ -137,7 +131,9 @@ private:
     int deviceCount;
     //指静脉设备信息
     DeviceInfo* m_pFingerVeinDeviceInfo;
-    QString m_qstrUserId;
+    int m_nDeviceId;
+    unsigned int m_nDBUSProgress;
+    enum OPS{IDLE, ENROLL, VERIFY, SEARCH} ops;
 };
 
 #endif // MAINWINDOW_H

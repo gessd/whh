@@ -68,22 +68,33 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
     <widget class="QLabel" name="labelTitelText">
      <property name="geometry">
       <rect>
-       <x>18</x>
+       <x>40</x>
        <y>10</y>
        <width>261</width>
-       <height>21</height>
+       <height>31</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>微软雅黑</family>
+       <pointsize>10</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
      <property name="text">
-      <string>标题</string>
+      <string>EasyDF指静脉认证管理</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
      </property>
     </widget>
     <widget class="QToolButton" name="btnTitleSet">
      <property name="geometry">
       <rect>
-       <x>550</x>
+       <x>540</x>
        <y>16</y>
-       <width>71</width>
+       <width>61</width>
        <height>24</height>
       </rect>
      </property>
@@ -126,9 +137,9 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
     <widget class="QToolButton" name="btnTitleAbout">
      <property name="geometry">
       <rect>
-       <x>670</x>
+       <x>660</x>
        <y>16</y>
-       <width>61</width>
+       <width>81</width>
        <height>24</height>
       </rect>
      </property>
@@ -136,7 +147,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
       <string>设置</string>
      </property>
      <property name="text">
-      <string>关于</string>
+      <string>关于我们</string>
      </property>
      <property name="icon">
       <iconset>
@@ -150,9 +161,9 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
     <widget class="QToolButton" name="btnTitleHelp">
      <property name="geometry">
       <rect>
-       <x>610</x>
+       <x>600</x>
        <y>16</y>
-       <width>71</width>
+       <width>61</width>
        <height>24</height>
       </rect>
      </property>
@@ -169,6 +180,22 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
      </property>
      <property name="toolButtonStyle">
       <enum>Qt::ToolButtonTextBesideIcon</enum>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="toolButton">
+     <property name="geometry">
+      <rect>
+       <x>5</x>
+       <y>10</y>
+       <width>28</width>
+       <height>28</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">.QToolButton{image:url(:/images/win.png);}</string>
+     </property>
+     <property name="text">
+      <string>...</string>
      </property>
     </widget>
    </widget>
@@ -214,12 +241,13 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
        <rect>
         <x>10</x>
         <y>40</y>
-        <width>601</width>
+        <width>411</width>
         <height>41</height>
        </rect>
       </property>
       <property name="text">
-       <string>双击手指对应的按钮进行登记、验证、删除信息。</string>
+       <string>点击手指对应的按钮进行登记、验证、删除信息。
+建议使用左右手食指、中指、无名指进行样本录入，以获得更好体验。</string>
       </property>
      </widget>
      <widget class="QToolButton" name="btnFinger_1">
@@ -587,7 +615,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
      <widget class="QLabel" name="labelDeviceStatus">
       <property name="geometry">
        <rect>
-        <x>420</x>
+        <x>430</x>
         <y>40</y>
         <width>291</width>
         <height>41</height>
@@ -644,7 +672,7 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
        <string>将手指放入传感器，直至进度条达到100%。</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_13">
+     <widget class="QLabel" name="labelMessage">
       <property name="geometry">
        <rect>
         <x>10</x>
@@ -764,14 +792,27 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
         <height>381</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QListWidget::item{
+    height:45px;
+}
+QTableWidget::item:selected{
+    background-color:rgb(240,241,247);
+}</string>
+      </property>
       <item>
        <property name="text">
-        <string>安全策略</string>
+        <string>界面语音</string>
        </property>
       </item>
       <item>
        <property name="text">
-        <string>支持语音</string>
+        <string>音量设置</string>
        </property>
       </item>
      </widget>
@@ -780,106 +821,13 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
        <rect>
         <x>170</x>
         <y>9</y>
-        <width>491</width>
-        <height>261</height>
+        <width>531</width>
+        <height>321</height>
        </rect>
       </property>
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="actionWidget">
-       <widget class="QLabel" name="label_7">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>10</y>
-          <width>301</width>
-          <height>51</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>设备不在线或闲置时间过长时关联动作</string>
-        </property>
-       </widget>
-       <widget class="QGroupBox" name="groupBox">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>60</y>
-          <width>561</width>
-          <height>321</height>
-         </rect>
-        </property>
-        <property name="title">
-         <string/>
-        </property>
-        <widget class="QRadioButton" name="radioButton_none">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>20</y>
-           <width>89</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>无</string>
-         </property>
-        </widget>
-        <widget class="QRadioButton" name="radioButton_lockScreen">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>60</y>
-           <width>89</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>锁屏</string>
-         </property>
-        </widget>
-        <widget class="QRadioButton" name="radioButton_logout">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>100</y>
-           <width>89</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>注销</string>
-         </property>
-        </widget>
-        <widget class="QRadioButton" name="radioButton_reboot">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>140</y>
-           <width>89</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>重启</string>
-         </property>
-        </widget>
-        <widget class="QRadioButton" name="radioButton_halt">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>180</y>
-           <width>89</width>
-           <height>16</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>关机</string>
-         </property>
-        </widget>
-       </widget>
-      </widget>
       <widget class="QWidget" name="languageWidget">
        <widget class="QLabel" name="label_8">
         <property name="geometry">
@@ -899,8 +847,8 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
          <rect>
           <x>20</x>
           <y>60</y>
-          <width>431</width>
-          <height>181</height>
+          <width>321</width>
+          <height>241</height>
          </rect>
         </property>
         <property name="title">
@@ -958,6 +906,56 @@ QCheckBox::indicator::checked, QRadioButton::indicator::checked, QListWidget::in
           <string>蒙文</string>
          </property>
         </widget>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="page_2">
+       <widget class="QLabel" name="label_13">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>20</y>
+          <width>471</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>滚动滑轮进行音量设置，数值越大，音量越大，数值为0时没有声音</string>
+        </property>
+       </widget>
+       <widget class="QSlider" name="horizontalSliderVoice">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>80</y>
+          <width>311</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="maximum">
+         <number>15</number>
+        </property>
+        <property name="pageStep">
+         <number>1</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::TicksAbove</enum>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelVoiceNum">
+        <property name="geometry">
+         <rect>
+          <x>340</x>
+          <y>80</y>
+          <width>41</width>
+          <height>21</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>音量</string>
+        </property>
        </widget>
       </widget>
      </widget>

@@ -5,13 +5,69 @@
 #include <QtCore/QModelIndex>
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
+#include <QtWidgets/QApplication>
 #include "xmessagebox.h"
 #include "styledefine.h"
 #include "setconfig.h"
+#include <dlfcn.h>
 
 #include <QDBusArgument>
 #include <unistd.h>
-//#include <pwd.h>
+#include <pwd.h>
+
+#define	XG_ERR_SUCCESS                0x00
+typedef char *LPCTSTR;
+
+typedef struct _API_FV
+{
+    long (*FV_ConnectDev) (LPCTSTR sDev, LPCTSTR sPasswrod);
+    long (*FV_CloseDev) (long lDevHandle);
+    long (*FV_SendCmdPacket) (long lDevHandle, long lCmd, LPCTSTR sData);
+    long (*FV_RecvCmdPacket) (long lDevHandle, LPCTSTR sData, long lTimeout);
+
+} FVAPI_t, *pFVAPI_t;
+static FVAPI_t m_FVAPI;
+static long s_devHd = 0;
+void *pSoHandle = NULL;
+
+static void* GetFVAPI(void *pSoHandle, const char* sApiName)
+{
+    char* sError = NULL;
+    void* pApi = NULL;
+
+    if(pSoHandle == NULL || sApiName == NULL) return NULL;
+
+    pApi = dlsym(pSoHandle, sApiName);
+    sError = dlerror();
+    if(sError != NULL)
+    {
+        //bio_print_error("API:%s ERROR:%s\n", sApiName, sError);
+        return NULL;
+    }
+    return pApi;
+}
+
+static int InitSo(char* sSoFileName)
+{
+    char* sError = NULL;
+
+    if(sSoFileName == NULL) return -1;
+
+    memset(&m_FVAPI, 0, sizeof(FVAPI_t));
+
+    pSoHandle = dlopen(sSoFileName, RTLD_LAZY);
+    if(pSoHandle == NULL)
+    {
+        sError = dlerror();
+        //bio_print_error("SO:%s ERROR:%s\n", sSoFileName, sError);
+        return -1;
+    }
+
+    m_FVAPI.FV_ConnectDev = (long(*)(LPCTSTR,LPCTSTR))GetFVAPI(pSoHandle, "FV_ConnectDev");
+    m_FVAPI.FV_CloseDev = (long(*)(long))GetFVAPI(pSoHandle, "FV_CloseDev");
+    m_FVAPI.FV_SendCmdPacket = (long(*)(long,long,LPCTSTR))GetFVAPI(pSoHandle, "FV_SendCmdPacket");
+    m_FVAPI.FV_RecvCmdPacket = (long(*)(long,LPCTSTR,long))GetFVAPI(pSoHandle, "FV_RecvCmdPacket");
+}
 
 enum EnWidgetIndex
 {
@@ -39,8 +95,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_StyledBackground);
     //创建菜单
-    m_pQuitAction = new QAction(tr("退出"), this);
-    m_pShowAction = new QAction(tr("显示"), this);
+    m_pQuitAction = new QAction(QIcon(":/images/title_close.png"), tr("退出"), this);
+    m_pShowAction = new QAction(QIcon(":/images/win.png"), tr("显示"), this);
 
     //创建状态栏
     m_pTrayIconMenu = new QMenu(this);
@@ -50,7 +106,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pTrayIcon = new QSystemTrayIcon(this);
     m_pTrayIcon->setContextMenu(m_pTrayIconMenu);
 
-    QIcon icon(QIcon(":/images/heart.png"));
+    QIcon icon(QIcon(":/images/win.png"));
     m_pTrayIcon->setIcon(icon);
     setWindowIcon(icon);
     m_pTrayIcon->show();
@@ -72,15 +128,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->btnAddVein, SIGNAL(clicked()), this, SLOT(onBtnAddVeinClicked()));
     connect(ui->btnFingerCheck, SIGNAL(clicked()), this, SLOT(onBtnFingerChecked()));
     connect(ui->listWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onItemClicked(QListWidgetItem*)));
-
-
-    m_pGroupAction = new QButtonGroup(this);
-    m_pGroupAction->addButton(ui->radioButton_none, ActionNone);
-    m_pGroupAction->addButton(ui->radioButton_lockScreen, ActionLockScreen);
-    m_pGroupAction->addButton(ui->radioButton_logout, ActionLogout);
-    m_pGroupAction->addButton(ui->radioButton_reboot, ActionReboot);
-    m_pGroupAction->addButton(ui->radioButton_halt, ActionHalt);
-    connect(m_pGroupAction, SIGNAL(buttonClicked(int)), this, SLOT(onSetActionClicked(int)));
 
     m_pGroupLanguage = new QButtonGroup(this);
     m_pGroupLanguage->addButton(ui->radioButton_zh_cn, 0);
@@ -109,16 +156,33 @@ MainWindow::MainWindow(QWidget *parent) :
     //kylin
     m_pFingerVeinDeviceInfo = NULL;
     /* 连接 DBus Daemon */
-    serviceInterface = new QDBusInterface(_FingerDbusService_, _FingerDbuPath_,
-                                          _FingerDbuInterface_,
+    serviceInterface = new QDBusInterface(DBUS_SERVICE, DBUS_PATH,
+                                          DBUS_INTERFACE,
                                           QDBusConnection::systemBus());
     serviceInterface->setTimeout(2147483647); /* 微秒 */
-    connect(serviceInterface, SIGNAL(EnrollStatus(QString,int,QString)), this, SLOT(onEnrollStatus(QString,int,QString)));
-    connect(serviceInterface, SIGNAL(VerifyStatus(QString,int,QString)), this, SLOT(onVerifyStatus(QString,int,QString)));
-    connect(serviceInterface, SIGNAL(Touch(QString,bool)), this, SLOT(onTouch(QString,bool)));
-    connect(serviceInterface, SIGNAL(siSendMessage(int,int,QString)), this, SLOT(onsiSendMessage(int,int,QString)));
-    m_qstrUserId = QString::number(getuid());
+    connect(serviceInterface, SIGNAL(USBDeviceHotPlug(int, int, int)), this, SLOT(onUSBDeviceHotPlug(int,int,int)));
+    connect(serviceInterface, SIGNAL(StatusChanged(int,int)), this, SLOT(onStatusChanged(int,int)));
 
+    ui->stackedWidgetSetSys->setCurrentIndex(0);
+    int nRow = ui->listWidget->count();
+    for(int i=0;i<nRow;i++){
+        QListWidgetItem* item = ui->listWidget->item(i);
+        if(NULL == item) continue;
+        if(0 == i){
+            item->setIcon(QIcon(":/images/action.png"));
+        } else if(1 == i){
+            item->setIcon(QIcon(":/images/account.png"));
+        } else if(2 == i){
+            item->setIcon(QIcon(":/images/language.png"));
+        } else if(3 == i) {
+            item->setIcon(QIcon(":/images/voice.png"));
+        }
+    }
+#ifndef Q_OS_WIN
+
+#else
+    ui->labelDeviceStatus->setVisible(fasle);
+#endif
     //注册自定义数据类型
     registerCustomTypes();
 
@@ -133,6 +197,19 @@ MainWindow::MainWindow(QWidget *parent) :
     bindButtonFinger(ui->btnFinger_8, _FingerStartIndex+8, ui->btnBlood_8);
     bindButtonFinger(ui->btnFinger_9, _FingerStartIndex+9, ui->btnBlood_9);
     bindButtonFinger(ui->btnFinger_10, _FingerStartIndex+10, ui->btnBlood_10);
+    ui->labelDeviceStatus->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(ui->labelDeviceStatus->text()));
+
+    connect(qApp, SIGNAL(messageReceived(QString)), this, SLOT(onMessageReceived(QString)));
+
+    InitSo("/usr/lib/libXGComApi.so");
+
+    //声音事件
+    unsigned int nVoice = SetConfig::getSetValue(_VoiceSet, 1).toUInt();
+    connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
+    ui->horizontalSliderVoice->setValue(nVoice);
+
+    m_nDBUSProgress = 0;
+    ops = IDLE;
 }
 
 MainWindow::~MainWindow()
@@ -143,17 +220,56 @@ MainWindow::~MainWindow()
 
 int MainWindow::sysInit()
 {
-    QDBusMessage message = QDBusMessage::createMethodCall(_ProxyDbusService_, _ProxyDbusPath_, _ProxyDbusInterface_, _ProxyDbusFuncitonName_);
-    message << QString(_DeviceName_);
-    QDBusMessage response = QDBusConnection::systemBus().call(message);
-    if (response.type() == QDBusMessage::ReplyMessage){
-        //修改默认设备没有返回值
-        //QString value = response.arguments().takeFirst().toString();
-    }
-    else{
-        qDebug() << "---- error"<<_ProxyDbusFuncitonName_<<response.errorName()<<response.errorMessage();
+    QVariant variant;
+    QDBusArgument argument;
+    QList<QDBusVariant> qlist;
+    QDBusVariant item;
+    DeviceInfo *deviceInfo;
+
+    /* 返回值为 i -- int 和 av -- array of variant */
+    QDBusPendingReply<int, QList<QDBusVariant> > reply = serviceInterface->call("GetDrvList");
+    reply.waitForFinished();
+    if (reply.isError()) {
+        qDebug() << "GUI:" << reply.error();
+        deviceCount = 0;
         return -1;
     }
+
+    /* 解析 DBus 返回值，reply 有两个返回值，都是 QVariant 类型 */
+    variant = reply.argumentAt(0); /* 得到第一个返回值 */
+    deviceCount = variant.value<int>(); /* 解封装得到设备个数 */
+    variant = reply.argumentAt(1); /* 得到第二个返回值 */
+    argument = variant.value<QDBusArgument>(); /* 解封装，获取QDBusArgument对象 */
+    argument >> qlist; /* 使用运算符重载提取 argument 对象里面存储的列表对象 */
+
+    m_pFingerVeinDeviceInfo = NULL;
+    for (int i = 0; i < deviceCount; i++) {
+        item = qlist[i]; /* 取出一个元素 */
+        variant = item.variant(); /* 转为普通QVariant对象 */
+        /* 解封装得到 QDBusArgument 对象 */
+        argument = variant.value<QDBusArgument>();
+        deviceInfo = new DeviceInfo();
+        argument >> *deviceInfo; /* 提取最终的 DeviceInfo 结构体 */
+
+        if(BIOTYPE_FINGERVEIN == deviceInfo->biotype){
+            if(deviceInfo->device_shortname.contains(_DeviceName_)){
+                qDebug()<<"---device "<<i<<deviceInfo<<deviceInfo->device_id<<
+                          deviceInfo->device_shortname<<deviceInfo->device_fullname<<deviceInfo->biotype;
+                m_pFingerVeinDeviceInfo = deviceInfo;
+                m_nDeviceId = m_pFingerVeinDeviceInfo->device_id;
+            }
+        }
+    }
+    ui->labelDeviceStatus->setVisible(false);
+    ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(true);
+    //无设备或设备被禁用
+    if(NULL == m_pFingerVeinDeviceInfo || m_pFingerVeinDeviceInfo->driver_enable <= 0 || m_pFingerVeinDeviceInfo->device_available <=0) {
+        ui->labelDeviceStatus->setVisible(true);
+        ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(false);
+        ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
+        return -1;
+    }
+    return 0;
 }
 
 void MainWindow::sysUnInit()
@@ -162,22 +278,11 @@ void MainWindow::sysUnInit()
 
 void MainWindow::showFingerInfo()
 {
-    QDBusPendingReply<QStringList> reply = serviceInterface->call("ListFingers", m_qstrUserId.toUtf8().data());
-    reply.waitForFinished();
-    if (reply.isError()) {
-        qDebug() << "---- error ListFingers" << reply.error();
-        return;
-    }
-    QStringList listFingers = reply.argumentAt<0>();
-    qDebug()<<"---- listFingers"<<listFingers;
-
-
     ui->btnTitleSet->setVisible(true);
     ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
 
-    /*
     //获取已录入指静脉信息
-    int drvId = m_pFingerVeinDeviceInfo->device_id;
+    int drvId = m_nDeviceId;
     int uid = getuid();
     int idxStart = 0;
     int idxEnd = -1;
@@ -187,7 +292,6 @@ void MainWindow::showFingerInfo()
     serviceInterface->callWithCallback("GetFeatureList", args, this,
                                        SLOT(showFeaturesCallback(QDBusMessage)),
                                        SLOT(errorCallback(QDBusError)));
-                                       */
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -268,10 +372,7 @@ void MainWindow::onTimeOut()
 
 void MainWindow::onBtnTitleSet()
 {
-    int nActionSet = SetConfig::getSetValue(_ActionSet, ActionLockScreen).toInt();
     int nLanguSet = SetConfig::getSetValue(_LanguageSet, 0).toInt();
-    QAbstractButton* pBtnAction = m_pGroupAction->button(nActionSet);
-    if(pBtnAction) pBtnAction->setChecked(true);
     QAbstractButton* pBtnLang = m_pGroupLanguage->button(nLanguSet);
     if(pBtnLang) pBtnLang->setChecked(true);
     ui->stackedWidget->setCurrentIndex(EnSysSetWidgetIndex);
@@ -284,7 +385,7 @@ void MainWindow::onBtnTitleHelp()
 
 void MainWindow::onBtnTitleAbout()
 {
-
+    XMessageBox::message(this, tr("关于我们"), tr("东方创芯（北京）数字技术有限公司\n版本：V1.1"));
 }
 
 void MainWindow::onBtnBackMainClicked()
@@ -346,25 +447,8 @@ void MainWindow::onBtnFingerClicked()
 
 void MainWindow::onBtnAddVeinClicked()
 {
-    //独占设备
-    QDBusPendingReply<void> replyClaim = serviceInterface->call("Claim", m_qstrUserId.toUtf8().data(), true);
-    replyClaim.waitForFinished();
-    if (replyClaim.isError()) {
-        qDebug() << "---- error Claim" << replyClaim.error();
-        return;
-    }
-    int idx = m_pCurrenFingerButton->property(_ButtonFingerIndex).toInt();
-    QString idxName = QString::number(idx);
-    QDBusPendingReply<void> replyEnroll = serviceInterface->call("Enroll", m_qstrUserId.toUtf8().data(), idxName.toUtf8().data());
-    replyEnroll.waitForFinished();
-    if (replyEnroll.isError()) {
-        qDebug() << "---- error Enroll" << replyEnroll.error();
-        return;
-    }
-
-
-    /*
-    int drvId = m_pFingerVeinDeviceInfo->device_id;
+    ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(false);
+    int drvId = m_nDeviceId;
     int uid = getuid();
     int idx = m_pCurrenFingerButton->property(_ButtonFingerIndex).toInt();
     QString idxName = QString::number(idx);
@@ -374,17 +458,20 @@ void MainWindow::onBtnAddVeinClicked()
                                                     SLOT(enrollCallBack(const QDBusMessage &)),
                                                     SLOT(errorCallBack(const QDBusError &)));
     if(false == bCall) {
-        ui->labelFingerText->setText(tr("录入操作错误"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("录入操作错误")));
+        ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
         return;
     }
+    m_nDBUSProgress = 1;
+	ops = ENROLL;
     _FingerProgress(_MaxProgressBar*0.1);
     ui->labelFingerText->setText(tr("正在录入信息"));
-    */
 }
 
 void MainWindow::onBtnFingerRemoveClicked()
 {
-    int drvId = m_pFingerVeinDeviceInfo->device_id;
+    ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(false);
+    int drvId = m_nDeviceId;
     int uid = getuid();
     int idxStart = m_pCurrenFingerButton->property(_ButtonFingerIndex).toInt();
     int idxEnd = -1;
@@ -392,19 +479,22 @@ void MainWindow::onBtnFingerRemoveClicked()
     QDBusPendingReply<int> reply = serviceInterface->call("Clean", drvId, uid, idxStart, idxEnd);
     reply.waitForFinished();
     if (reply.isError()) {
-        ui->labelFingerText->setText(tr("删除失败")+" "+reply.error().message());
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("删除失败")+" "+reply.error().message()));
+        ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
         return;
     }
     ui->labelFingerText->setText(tr("信息删除成功"));
     _FingerProgress(_MaxProgressBar*1);
     setButtonFingerInfo(m_pCurrenFingerButton, false);
     showVeinAddWidget(m_pCurrenFingerButton);
+    ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
 }
 
 //信息验证
 void MainWindow::onBtnFingerChecked()
 {
-    int drvId = m_pFingerVeinDeviceInfo->device_id;
+    ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(false);
+    int drvId = m_nDeviceId;
     int uid = getuid();
     int idx = m_pCurrenFingerButton->property(_ButtonFingerIndex).toInt();
     QList<QVariant> args;
@@ -414,7 +504,8 @@ void MainWindow::onBtnFingerChecked()
                                                     SLOT(verifyCallBack(const QDBusMessage &)),
                                                     SLOT(errorCallBack(const QDBusError &)));
     if(false == bCall) {
-        ui->labelFingerText->setText(tr("验证操作错误"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("验证操作错误")));
+        ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
         return;
     }
     _FingerProgress(_MaxProgressBar*0.1);
@@ -474,7 +565,10 @@ QToolButton *MainWindow::getFingerButton(int index)
 
 void MainWindow::onUSBDeviceHotPlug(int drvid, int action, int devNumNow)
 {
-    if(_DeviceId_ != drvid) return;
+    //if(_DeviceId_ != drvid) return;
+    sysInit();
+    showFingerInfo();
+    /*
     if(action <=0 || devNumNow <= 0){
         ui->labelDeviceStatus->setVisible(true);
         ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(false);
@@ -483,20 +577,69 @@ void MainWindow::onUSBDeviceHotPlug(int drvid, int action, int devNumNow)
         ui->labelDeviceStatus->setVisible(false);
         ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(true);
     }
+    */
+}
+
+int setSound(int Sound)
+{
+    if(!m_FVAPI.FV_ConnectDev) return -1;
+    s_devHd = m_FVAPI.FV_ConnectDev((char*)"VID=8455,PID=30008", (char*)"00000000");
+    if (s_devHd <= 0) {
+        //bio_print_error("df100_ops_open failed\n");
+        s_devHd = 0;
+        return -1;
+    }
+    if (s_devHd <= 0) {
+        return -1;
+    }
+    int ret;
+    unsigned char bData[16] = { 0 };
+    char sData[50] = { 0 };
+
+    sprintf(sData, "20%02X", Sound);
+    ret = m_FVAPI.FV_SendCmdPacket(s_devHd, 0x4B, sData);
+    if(ret == XG_ERR_SUCCESS)
+    {
+        m_FVAPI.FV_RecvCmdPacket(s_devHd, sData, 1000);
+    }
+    if (s_devHd > 0) {
+        m_FVAPI.FV_CloseDev(s_devHd);
+        s_devHd = 0;
+    }
+    return ret*-1;
+}
+
+void MainWindow::onVoiceValueChanged(int value)
+{
+    setSound(value);
+    if(0 > value) value = 0;
+    if(value > 15) value = 15;
+    ui->labelVoiceNum->setText(tr("音量:")+ QString::number(value));
+}
+
+void MainWindow::onMessageReceived(QString qstrMessage)
+{
+    onShowWindow();
 }
 
 void MainWindow::onStatusChanged(int drvId, int statusType)
 {
-    if(_DeviceId_ != drvId) return;
-    if(3 == statusType) {
-        //设备被禁用
-        ui->labelDeviceStatus->setVisible(true);
-        ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(false);
-        ui->stackedWidget->setCurrentIndex(EnMainWidgetIndex);
-    } else {
-        ui->labelDeviceStatus->setVisible(false);
-        ui->stackedWidget->widget(EnMainWidgetIndex)->setEnabled(true);
+    if(m_nDeviceId != drvId) return;
+
+    if (ops == ENROLL) {
+	    if(m_nDBUSProgress>0) {
+		    _FingerProgress((m_nDBUSProgress-1)*33);
+		    m_nDBUSProgress++;
+	    }
     }
+    QDBusMessage notifyReply = serviceInterface->call("GetNotifyMesg", drvId);
+    if(notifyReply.type() == QDBusMessage::ErrorMessage) {
+        qDebug() << "DBUS: " << notifyReply.errorMessage();
+        return;
+    }
+    QString prompt = notifyReply.arguments().at(0).toString();
+    qDebug() << "---- message:"<<prompt;
+    ui->labelFingerText->setText(prompt);
 }
 
 void MainWindow::enrollCallBack(const QDBusMessage &reply)
@@ -513,9 +656,11 @@ void MainWindow::enrollCallBack(const QDBusMessage &reply)
         break;
     }
     default:
-        ui->labelFingerText->setText(tr("录入失败")+" "+handleErrorResult(result));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("录入失败")));
         break;
     }
+    ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
+    ops = IDLE;
 }
 
 void MainWindow::verifyCallBack(const QDBusMessage &reply)
@@ -527,12 +672,13 @@ void MainWindow::verifyCallBack(const QDBusMessage &reply)
         ui->labelFingerText->setText(tr("验证成功"));
         _FingerProgress(1*_MaxProgressBar);
     } else if(result == DBUS_RESULT_NOTMATCH) {
-        ui->labelFingerText->setText(tr("验证失败，不匹配"));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("验证失败，不匹配")));
         _FingerProgress(0.5*_MaxProgressBar);
     } else {
-        ui->labelFingerText->setText(tr("验证失败")+" "+handleErrorResult(result));
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("验证失败")+" "+handleErrorResult(result)));
         _FingerProgress(0.5*_MaxProgressBar);
     }
+    ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
 }
 
 void MainWindow::searchCallBack(const QDBusMessage &reply)
@@ -548,6 +694,11 @@ void MainWindow::StopOpsCallBack(const QDBusMessage &reply)
 void MainWindow::errorCallBack(const QDBusError &error)
 {
     qDebug() << "DBus Error: " << error.message();
+    QString qstrErrorMessage = error.message();
+    if(!qstrErrorMessage.isEmpty()){
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(qstrErrorMessage));
+    }
+    ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
 }
 
 void MainWindow::errorCallback(QDBusError error)
@@ -580,26 +731,6 @@ void MainWindow::showFeaturesCallback(QDBusMessage callbackReply)
     }
 }
 
-void MainWindow::onEnrollStatus(QString id, int code, QString msg)
-{
-    qDebug()<<"---- onEnrollStatus"<<id<<code<<msg;
-}
-
-void MainWindow::onVerifyStatus(QString id, int code, QString msg)
-{
-    qDebug()<<"---- onVerifyStatus"<<id<<code<<msg;
-}
-
-void MainWindow::onTouch(QString id, bool pressed)
-{
-    qDebug()<<"---- onTouch"<<id<<pressed;
-}
-
-void MainWindow::onsiSendMessage(int type, int code, QString msg)
-{
-    qDebug()<<"---- onsiSendMessage"<<type<<code<<msg;
-}
-
 void MainWindow::initFingerData(QToolButton *button, int index)
 {
     connect(button, SIGNAL(clicked()), this, SLOT(onBtnFingerClicked()));
@@ -630,7 +761,7 @@ void MainWindow::showVeinAddWidget(QToolButton *button)
     ui->btnFingerCheck->setVisible(false);
     ui->btnAddVein->setVisible(true);
     _FingerProgress(0*_MaxProgressBar);
-
+    ui->labelMessage->setText(tr("录入"));
     m_pCurrenFingerButton = button;
     ui->stackedWidget->setCurrentIndex(EnCreateUserWidgetIndex);
 }
@@ -643,7 +774,7 @@ void MainWindow::showVeinCompareWidget(QToolButton *button)
     ui->btnFingerCheck->setVisible(true);
     ui->btnAddVein->setVisible(false);
     _FingerProgress(0*_MaxProgressBar);
-
+    ui->labelMessage->setText(tr("验证"));
     m_pCurrenFingerButton = button;
     ui->stackedWidget->setCurrentIndex(EnCreateUserWidgetIndex);
 }

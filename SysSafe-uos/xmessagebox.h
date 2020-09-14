@@ -25,6 +25,8 @@ public:
 	static XMessageBox::StandardButton question(QWidget *parent, const QString &title, const QString &text);
 	
 	static XMessageBox::StandardButton warning(QWidget *parent, const QString &title, const QString &text);
+
+    static XMessageBox::StandardButton message(QWidget *parent, const QString &title, const QString &text);
 protected:
 	virtual bool eventFilter(QObject *watched, QEvent *event);
 private:
