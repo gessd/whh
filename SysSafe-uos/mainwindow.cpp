@@ -70,6 +70,7 @@ static int InitSo(char* sSoFileName)
     m_FVAPI.FV_SendCmdPacket = (long(*)(long,long,LPCTSTR))GetFVAPI(pSoHandle, "FV_SendCmdPacket");
     m_FVAPI.FV_RecvCmdPacket = (long(*)(long,LPCTSTR,long))GetFVAPI(pSoHandle, "FV_RecvCmdPacket");
 }
+#endif
 
 enum EnWidgetIndex
 {
@@ -77,7 +78,6 @@ enum EnWidgetIndex
     EnCreateUserWidgetIndex,
     EnSysSetWidgetIndex
 };
-#endif
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -93,10 +93,10 @@ MainWindow::MainWindow(QWidget *parent) :
     //去掉边框
     setWindowFlags(Qt::FramelessWindowHint);
     //背景透明度
-    setWindowOpacity(1);
+    //setWindowOpacity(1);
     //设置背景透明
-    setAttribute(Qt::WA_TranslucentBackground);
-    setAttribute(Qt::WA_StyledBackground);
+    //setAttribute(Qt::WA_TranslucentBackground);
+    //setAttribute(Qt::WA_StyledBackground);
     //创建菜单
     m_pQuitAction = new QAction(QIcon(":/images/title_close.png"), tr("退出"), this);
     m_pShowAction = new QAction(QIcon(":/images/win.png"), tr("显示"), this);
@@ -207,9 +207,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->labelDeviceStatus->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(ui->labelDeviceStatus->text()));
 
     connect(qApp, SIGNAL(messageReceived(QString)), this, SLOT(onMessageReceived(QString)));
-
+#ifdef _UseVoice_
     InitSo("/usr/lib/libXGComApi.so");
-
+#endif
     //声音事件
     unsigned int nVoice = SetConfig::getSetValue(_VoiceSet, 1).toUInt();
     connect(ui->horizontalSliderVoice, SIGNAL(valueChanged(int)), this, SLOT(onVoiceValueChanged(int)));
@@ -255,11 +255,11 @@ void MainWindow::showFingerInfo()
     QDBusMessage response = QDBusConnection::systemBus().call(message);
     if (response.type() != QDBusMessage::ReplyMessage){
         qDebug() << "---- error "<<response.type()<<response.errorName()<<response.errorMessage();
-        return -1;
+        return;
     }
     QStringList list = response.arguments().takeFirst().toStringList();
     qDebug()<<"---- fingerlist "<<list;
-    return 0;
+    return;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -556,6 +556,7 @@ QToolButton *MainWindow::getFingerButton(int index)
 
 int setSound(int Sound)
 {
+#ifdef _UseVoice_
     if(!m_FVAPI.FV_ConnectDev) return -1;
     s_devHd = m_FVAPI.FV_ConnectDev((char*)"VID=8455,PID=30008", (char*)"00000000");
     if (s_devHd <= 0) {
@@ -581,6 +582,8 @@ int setSound(int Sound)
         s_devHd = 0;
     }
     return ret*-1;
+#endif
+    return -1;
 }
 
 void MainWindow::onVoiceValueChanged(int value)
@@ -616,7 +619,7 @@ void MainWindow::enrollCallBack(const QDBusMessage &reply)
     QDBusMessage mesStop = QDBusMessage::createMethodCall(_Uos_DBUS_SERVICE, _Uos_DBUS_PATH,
                                                           _Uos_DBUS_INTERFACE, "StopEnroll");
     QDBusMessage resStop = QDBusConnection::systemBus().call(mesStop);
-    if (response.type() != QDBusMessage::ReplyMessage){
+    if (resStop.type() != QDBusMessage::ReplyMessage){
         qDebug() << "---- error StopEnroll "<<resStop.type()<<resStop.errorName()<<resStop.errorMessage();
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("停止指静脉采集失败")));
     }
@@ -653,7 +656,7 @@ void MainWindow::verifyCallBack(const QDBusMessage &reply)
     QDBusMessage mesStop = QDBusMessage::createMethodCall(_Uos_DBUS_SERVICE, _Uos_DBUS_PATH,
                                                           _Uos_DBUS_INTERFACE, "StopVerify");
     QDBusMessage resStop = QDBusConnection::systemBus().call(mesStop);
-    if (response.type() != QDBusMessage::ReplyMessage){
+    if (resStop.type() != QDBusMessage::ReplyMessage){
         qDebug() << "---- error StopVerify "<<resStop.type()<<resStop.errorName()<<resStop.errorMessage();
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("停止指静脉采集失败")));
     }
@@ -800,7 +803,7 @@ void MainWindow::onTouch(QString id, bool pressed)
 
 void MainWindow::onsiSendMessage(int type, int code, QString msg)
 {
-    qDebug()<<"---- onsiSendMessage"<<id<<code<<msg;
+    qDebug()<<"---- onsiSendMessage"<<type<<code<<msg;
 }
 
 void MainWindow::initFingerData(QToolButton *button, int index)
