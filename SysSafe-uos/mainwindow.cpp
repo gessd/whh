@@ -77,6 +77,29 @@ static int InitSo(char* sSoFileName)
 }
 #endif
 
+
+std::string getUserName()
+{
+#if defined linux   //linux system
+    uid_t userid;
+    struct passwd* pwd;
+    userid=getuid();
+    pwd=getpwuid(userid);
+    return pwd->pw_name;
+
+#elif defined _WIN32  //windows system
+    const int MAX_LEN = 100;
+    char szBuffer[MAX_LEN];
+    DWORD len = MAX_LEN;
+    if( GetUserName(szBuffer, &len) )     //用户名保存在szBuffer中,len是用户名的长度
+        return szBuffer;
+
+#else  //outher system
+    return "";
+#endif
+}
+
+
 enum EnWidgetIndex
 {
     EnMainWidgetIndex=0,
@@ -165,7 +188,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pFingerVeinDeviceInfo = NULL;
 
     //Uos
-    m_qstrUserId = QString::number(getuid());
+    //m_qstrUserId = QString::number(getuid());
+    m_qstrUserId = QString::fromStdString(getUserName());
     serviceInterface = new QDBusInterface(_UosProxy_DBUS_SERVICE, _UosProxy_DBUS_PATH,
                                           _UosProxy_DBUS_INTERFACE,
                                           QDBusConnection::systemBus());
@@ -263,6 +287,7 @@ void MainWindow::showFingerInfo()
         return;
     }
     QStringList list = response.arguments().takeFirst().toStringList();
+    list<<"1001";
     qDebug()<<"---- fingerlist "<<list;
     foreach(QString qstrName, list){
         //指静脉信息绑定到界面按钮
@@ -445,7 +470,7 @@ void MainWindow::onBtnAddVeinClicked()
     int idx = m_pCurrenFingerButton->property(_ButtonFingerIndex).toInt();
     QString idxName = QString::number(idx);
     QList<QVariant> args;
-    args << m_qstrUserId.toUtf8().data()<<idxName.toUtf8().data();
+    args <<m_qstrUserId.toUtf8().data()<<idxName.toUtf8().data();
     bool bCall = serviceInterface->callWithCallback("Enroll", args, this,
                                                     SLOT(enrollCallBack(const QDBusMessage &)),
                                                     SLOT(errorCallBack(const QDBusError &)));
