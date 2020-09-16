@@ -9,6 +9,51 @@
 #include <QtWidgets/QToolButton>
 #include "contorllthread.h"
 
+enum VOICE_e
+{
+    VOICE_REG_OK = 0,//登记成功
+    VOICE_USER_FULL = 1,//记录已满
+    VOICE_REG_FAIL = 2,//登记失败
+    VOICE_OVER_REG = 3, //登记重复
+    VOICE_ADMIN_AUTH_OK=8, //管理员验证成功
+    VOICE_ADMIN_AUTH_FAIL=9, //管理员验证失败
+    VOICE_ERROR_CARD=10, //卡号错误
+    VOICE_PWD_ERROR=13, //密码错误
+    VOICE_PWD_REG_OK = 14,//密码登记成功
+    VOICE_PWD_REG_FAIL = 15,//密码登记失败
+    VOICE_ENROLL_ADMIN = 18,//请登记管理员
+    VOICE_PINPUT_PWD = 19,//请输入密码
+    VOICE_PINPUT_ID = 20,//请输入用户ID
+    VOICE_ADMIN_AUTH = 21,//请验证管理员
+    VOICE_INPUT_FINGER_AGAIN = 23,//请再放一次
+    VOICE_RETRY = 24,//请再试一次
+    VOICE_INPUT_AGAIN = 25,//请再输一次
+    VOICE_RIGHT_INPUT = 26, //请正确放置手指
+    VOICE_INPUT = 27,//请自然轻放手指
+    VOICE_DEL_OK = 28,//删除成功
+    VOICE_DEL_FAIL = 29,//删除失败
+    VOICE_THANKS = 30, //谢谢
+    VOICE_DELING = 31,//正在删除
+    VOICE_IDENT_FAIL = 32,//验证失败
+    VOICE_IDENT_OK = 33, //验证成功
+    VOICE_UNLOCK = 34, //已开锁
+    VOICE_BEEP1 = 35,
+    VOICE_KEY = 36,
+    VOICE_BEEP3 = 37,
+    VOICE_BEEP4 = 38,
+    VOICE_ALARM = 39, //39 报警音
+    VOICE_OK_KEY_CONFIRM = 40, //按OK键确认
+    VOICE_POWER_LOW = 41, //电量不足请更换电池
+    VOICE_ADMIN = 42,//管理员
+    VOICE_PWD = 43,//密码
+    VOICE_CARDNO = 44,//刷卡
+    VOICE_INPUT_CARD = 45, //请刷卡
+    VOICE_PLS_INPUT_ADMIN_PWD = 47, //请输入管理员密码
+    VOICE_ADMIN_FULL = 49, //管理员已满
+    VOICE_OK_KEY_DEL_CONFIRM = 50, //请按OK键确认删除
+    VOICE_END
+};
+
 struct StDeviceStatus
 {
     bool bUseint;           //使用中

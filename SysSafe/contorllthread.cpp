@@ -291,6 +291,7 @@ void ContorllThread::thread_checkOnline()
 void ContorllThread::thread_soundCtl()
 {
     m_pFunc->nResult = soundCtl(m_pFunc->nCode);
+    qDebug()<<"---- soundCtl"<<m_pFunc->nCode<<m_pFunc->nResult;
 }
 
 void ContorllThread::thread_ledCtl()

@@ -381,7 +381,10 @@ void MainWindow::onBtnTitleSet()
 
 void MainWindow::onBtnTitleHelp()
 {
-
+    for(int i=0; i<VOICE_END;i++){
+        QThread::sleep(1);
+        int nsound = m_userManage.QF_soundCtl(i);
+    }
 }
 
 void MainWindow::onBtnTitleAbout()
