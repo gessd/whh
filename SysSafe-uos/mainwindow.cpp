@@ -188,8 +188,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_pFingerVeinDeviceInfo = NULL;
 
     //Uos
-    //m_qstrUserId = QString::number(getuid());
-    m_qstrUserId = QString::fromStdString(getUserName());
+    m_qstrUserId = QString::number(getuid());
+    //m_qstrUserId = QString::fromStdString(getUserName());
     serviceInterface = new QDBusInterface(_UosProxy_DBUS_SERVICE, _UosProxy_DBUS_PATH,
                                           _UosProxy_DBUS_INTERFACE,
                                           QDBusConnection::systemBus());
@@ -287,7 +287,7 @@ void MainWindow::showFingerInfo()
         return;
     }
     QStringList list = response.arguments().takeFirst().toStringList();
-    list<<"1001";
+    //list<<"1001";
     qDebug()<<"---- fingerlist "<<list;
     foreach(QString qstrName, list){
         //指静脉信息绑定到界面按钮
