@@ -265,6 +265,8 @@ void MainWindow::showUserName()
     if(0 == nCheck){
         ui->btnSetPass->setVisible(true);
         onBtnSetUserPass();
+    } else {
+        m_userManage.QF_soundCtl(VOICE_PINPUT_PWD);
     }
     //连接监控设备程序
     onReconnection();
@@ -410,8 +412,11 @@ void MainWindow::onBtnSetUserPass()
         std::wstring wstrPass = qstrPass.toStdWString();
         int nSet = m_userManage.QF_setPassword(const_cast<WCHAR*>(wstrUserName.c_str()), const_cast<WCHAR*>(wstrPass.c_str()));
         if(0 > nSet){
+            m_userManage.QF_soundCtl(VOICE_PWD_REG_FAIL);
             ui->labelPassMassage->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("密码设置错误")));
             onBtnSetUserPass();
+        } else {
+            m_userManage.QF_soundCtl(VOICE_PWD_REG_OK);
         }
     }
 }
@@ -431,10 +436,12 @@ void MainWindow::onBtnLogonClicked()
     std::wstring wstrPass = ui->lineEditPass->text().trimmed().toStdWString();
     int nVeri = m_userManage.QF_veriPassword(const_cast<WCHAR*>(wstrUserName.c_str()), const_cast<WCHAR*>(wstrPass.c_str()));
     if(0 != nVeri){
+        m_userManage.QF_soundCtl(VOICE_PWD_ERROR);
         ui->labelPassMassage->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("登录失败: 未知的用户名或错误密码")));
         ui->lineEditPass->clear();
         return;
     }
+    m_userManage.QF_soundCtl(VOICE_ADMIN_AUTH_OK);
 #ifdef _USER_DRV_API_
     //获取用户信息及指静脉信息
     memset(m_stUserData.user_name, 0 ,sizeof(m_stUserData.user_name));
@@ -552,6 +559,7 @@ void MainWindow::onBtnAddVeinClicked()
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("无法连接设备，请重试")));
         return;
     }
+    m_userManage.QF_soundCtl(VOICE_INPUT);
     ui->labelFingerText->setText(tr("设备连接成功，请放入手指"));
     QWidget* curWidget = ui->stackedWidget->currentWidget();
     if(curWidget){
@@ -576,11 +584,13 @@ void MainWindow::onBtnAddVeinClicked()
     for(int i=0; i<nVienNum; i++){
         nCheck = m_userManage.QF_checkFinger(10, true);
         if(0 >= nCheck) {
+            m_userManage.QF_soundCtl(VOICE_RIGHT_INPUT);
             ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("未检测到手指，请重新录入")));
             goto ToFingerDisCon;
         }
         fVeinLen = m_userManage.QF_getVeinChara(cVeinData[i]);
         if(0 >= fVeinLen) {
+            m_userManage.QF_soundCtl(VOICE_RETRY);
             ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("未检测到指静脉信息，请重新录入")));
             goto ToFingerDisCon;
         }
@@ -588,6 +598,7 @@ void MainWindow::onBtnAddVeinClicked()
             //与上一次对比是否为同一根手指,不是则重新录入
             nCompare = m_userManage.QF_veinCompare(cVeinData[i-1], cVeinData[i], 60);
             if(0 > nCompare){
+                m_userManage.QF_soundCtl(VOICE_RETRY);
                 memset(cVeinData[i], 0, nVeinDataLen);
                 i--;
                 ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("不是同一根手指，请重新录入")));
@@ -596,7 +607,7 @@ void MainWindow::onBtnAddVeinClicked()
         }
         _FingerProgress((i+1)*0.3*_MaxProgressBar);
         ui->labelFingerText->setText(QString(tr("第%1次检测完成，请重新放入手指")).arg(i+1));
-
+        m_userManage.QF_soundCtl(VOICE_INPUT_FINGER_AGAIN);
         //timeout=-1 永远不超时
         nCheck = m_userManage.QF_checkFinger(-1, false);
         if(0 >= nCheck) {
@@ -607,6 +618,7 @@ void MainWindow::onBtnAddVeinClicked()
     //三次指静脉信息录入完成后合并信息
     nCreate = m_userManage.QF_createVeinTemp(cVeinData[0], cVeinData[1], cVeinData[2], cVeinComplete);
     if(0 >= nCreate){
+        m_userManage.QF_soundCtl(VOICE_REG_FAIL);
         _FingerProgress(0*_MaxProgressBar);
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("指静脉信息处理失败，请重新录入")));
         goto ToFingerDisCon;
@@ -619,6 +631,7 @@ void MainWindow::onBtnAddVeinClicked()
 #endif
     nCreate = m_userManage.QF_veinAdd(pVein);
     if(0 > nCreate){
+        m_userManage.QF_soundCtl(VOICE_REG_FAIL);
         _FingerProgress(0*_MaxProgressBar);
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("指静脉信息登记失败，请重试")));
         goto ToFingerDisCon;
@@ -626,7 +639,7 @@ void MainWindow::onBtnAddVeinClicked()
     _FingerProgress(1*_MaxProgressBar);
     ui->labelFingerText->setText(tr("信息录入完成"));
     showVeinCompareWidget(m_pCurrenFingerButton);
-
+    m_userManage.QF_soundCtl(VOICE_REG_OK);
     //录入完成主页对应血管图片
     pBloodButton = m_pCurrenFingerButton->property(_ButtonPropertyName).value<QToolButton*>();
     if(pBloodButton) pBloodButton->setVisible(true);
@@ -645,13 +658,15 @@ void MainWindow::onBtnFingerRemoveClicked()
     if(NULL == m_pCurrenFingerButton) return;
     StVein* pVein = m_mapButtonFinger[m_pCurrenFingerButton];
     if(NULL == pVein) return;
-
+    m_userManage.QF_soundCtl(VOICE_DELING);
     ui->labelFingerText->setText(tr("正在删除信息，请稍后"));
     int nDel = m_userManage.QF_veinDel(pVein);
     if(0 > nDel){
+        m_userManage.QF_soundCtl(VOICE_DEL_FAIL);
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("指静脉信息删除失败，请重试")));
         return;
     }
+    m_userManage.QF_soundCtl(VOICE_DEL_OK);
 #ifdef _USER_DRV_API_
     //清空成员变量中记录的信息
     memset(m_mapButtonFinger[m_pCurrenFingerButton]->temp, 0, sizeof(m_mapButtonFinger[m_pCurrenFingerButton]->temp));
@@ -683,6 +698,7 @@ void MainWindow::onBtnFingerChecked()
         curWidget->setEnabled(false);
     }
 
+    m_userManage.QF_soundCtl(VOICE_INPUT);
     ui->labelFingerText->setText(tr("设备连接成功，请放入手指"));
     int nCheck = -1;
     const int nVeinDataLen = 1024*20;
@@ -692,19 +708,21 @@ void MainWindow::onBtnFingerChecked()
     _FingerProgress(0.05*_MaxProgressBar);
     nCheck = m_userManage.QF_checkFinger(10, true);
     if(0 >= nCheck) {
+        m_userManage.QF_soundCtl(VOICE_RETRY);
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("未检测到手指，请重试")));
         goto ToFingerDisCon;
     }
-    //}
+
     _FingerProgress(0.5*_MaxProgressBar);
     ui->labelFingerText->setText(tr("正在检测指静脉信息，请稍后"));
     //等待检测指静脉信息
     lVeinLen = m_userManage.QF_getVeinChara(cVeinData);
     if(0>= lVeinLen){
+        m_userManage.QF_soundCtl(VOICE_RETRY);
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("未检测到指静脉信息，请重试")));
         goto ToFingerDisCon;
     }
-    //}
+
     _FingerProgress(0.9*_MaxProgressBar);
     ui->labelFingerText->setText(tr("正在验证指静脉信息，请稍后"));
     //验证信息
@@ -712,9 +730,11 @@ void MainWindow::onBtnFingerChecked()
     nCompare = m_userManage.QF_veinVerifyUser(cVeinData, pVein->temp);
 #endif
     if(0 != nCompare){
+        m_userManage.QF_soundCtl(VOICE_IDENT_FAIL);
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("指静脉信息不匹配，请重试")));
         goto ToFingerDisCon;
     }
+    m_userManage.QF_soundCtl(VOICE_IDENT_OK);
     _FingerProgress(1*_MaxProgressBar);
     ui->labelFingerText->setText(tr("信息匹配一致"));
 ToFingerDisCon:
