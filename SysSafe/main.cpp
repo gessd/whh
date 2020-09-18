@@ -3,6 +3,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QDebug>
 #include <QtCore/QProcess>
+#include <QtCore/QTranslator>
 #include "xmessagebox.h"
 #include "QtSingleApplication"
 #include "styledefine.h"
@@ -21,6 +22,22 @@ int main(int argc, char *argv[])
         app.sendMessage("raise_window_noop");
         return EXIT_SUCCESS;
     }
+
+    QString qstrTranlatorFile = QString(":/translator/%1");
+    int nLanguage = SetConfig::getSetValue(_LanguageSet, 0).toInt();
+    switch (nLanguage) {
+    case 0: break;
+    case 1: qstrTranlatorFile.arg("zh_tw.qm"); break;
+    case 2: qstrTranlatorFile.arg("eng.qm"); break;
+    case 3: qstrTranlatorFile.arg("mw.qm"); break;
+    default: break;
+    }
+    //加载翻译文件
+    QTranslator translator;
+    if(translator.load(qstrTranlatorFile)){
+        QApplication::installTranslator(&translator);
+    }
+
     MainWindow w;
     app.setActivationWindow(&w);
 #else

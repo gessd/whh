@@ -23,7 +23,7 @@ include(./qtsingleapplication/src/qtsingleapplication.pri)
 
 RC_FILE += res.rc
 
-TRANSLATIONS = language.ts
+TRANSLATIONS = ./translator/language.ts
 
 SOURCES += main.cpp\
         mainwindow.cpp \

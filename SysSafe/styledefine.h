@@ -23,7 +23,8 @@
 #define _ActionSet "Setting/Action"
 //设备最长离线时间 秒
 #define _MaxTimeOutDeviceOffline "Setting/MaxTimeOutDeviceOffline"
-//语言 [0,1,2]和界面对应
+//语言 [0,1,2,3]和界面对应
+//简体中文 繁体中文 英文 蒙文
 #define _LanguageSet "Setting/Language"
 #define _VoiceSet "Setting/Voice"
 //密码大写字母 1包含 0可以不包含

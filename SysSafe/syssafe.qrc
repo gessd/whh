@@ -53,5 +53,8 @@
 		<file>images/remove_clicked.png</file>
 		<file>images/remove_hover.png</file>
 		<file>images/heart.png</file>
+		<file>translator/eng.qm</file>
+		<file>translator/zh_tw.qm</file>
+		<file>translator/mw.qm</file>
     </qresource>
 </RCC>
