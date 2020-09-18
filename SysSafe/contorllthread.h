@@ -113,6 +113,7 @@ struct _StFunParamAndRes
     WCHAR* pUserPass;
     StUser* pUser;
     StVein* pVein;
+    int Led[6];
 
     CHAR* pChara1;
     CHAR* pChara2;
@@ -133,6 +134,7 @@ struct _StFunParamAndRes
         pUserName = pUserPass = NULL;
         pUser = NULL;
         pVein = NULL;
+        memset(Led, 0, sizeof(Led));
 
         pChara1 = pChara2 = pChara3 = pTemp =NULL;
         pUserEx = NULL;

@@ -296,7 +296,11 @@ void ContorllThread::thread_soundCtl()
 
 void ContorllThread::thread_ledCtl()
 {
-
+    //int led0[6] = {1,0,1,1,0,1};
+    //int led1[6] = {0,0,1,1,0,1};
+    //int led2[6] = {0,0,0,1,0,1};
+    //int ledFinished[6] = {1,1,1,1,0,1};
+    m_pFunc->nResult = ledCtl(m_pFunc->Led);
 }
 
 void ContorllThread::thread_get11Status()

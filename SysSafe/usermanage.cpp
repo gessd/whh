@@ -333,9 +333,15 @@ int UserManage::QF_soundCtl(int Sound)
     return param.nResult;
 }
 
-int UserManage::QF_ledCtl(int Led[])
+int UserManage::QF_ledCtl(int Led[6])
 {
-    return -1;
+    _StFunParamAndRes param;
+    param.type = ft_ledCtl;
+    for(int i=0; i<6; i++){
+        param.Led[i] = Led[i];
+    }
+    waitThreadRunFinish(param);
+    return param.nResult;
 }
 
 void UserManage::setDeviceOfflineTimeOut(unsigned int nTimeOut)
