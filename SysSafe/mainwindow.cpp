@@ -585,9 +585,6 @@ void MainWindow::onBtnAddVeinClicked()
     _FingerProgress(_MaxProgressBar*0.05);
     //录入时需要获取三遍指静脉特征然后融合后保存
     for(int i=0; i<nVienNum; i++){
-        if (i > 0) {
-            m_userManage.QF_soundCtl(VOICE_INPUT_FINGER_AGAIN);
-        }
         nCheck = m_userManage.QF_checkFinger(10, true);
         if(0 >= nCheck) {
             m_userManage.QF_soundCtl(VOICE_RIGHT_INPUT);
@@ -628,6 +625,11 @@ void MainWindow::onBtnAddVeinClicked()
         _FingerProgress((i+1)*0.3*_MaxProgressBar);
         ui->labelFingerText->setText(QString(tr("第%1次检测完成，请重新放入手指")).arg(i+1));
 
+
+        if (i < 2) {
+            Sleep(100);
+            m_userManage.QF_soundCtl(VOICE_INPUT_FINGER_AGAIN);
+        }
         //timeout=-1 永远不超时
         nCheck = m_userManage.QF_checkFinger(-1, false);
         if(0 >= nCheck) {
