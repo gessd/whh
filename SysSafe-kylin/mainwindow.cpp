@@ -293,7 +293,7 @@ void MainWindow::showFingerInfo()
 
     serviceInterface->callWithCallback("GetFeatureList", args, this,
                                        SLOT(showFeaturesCallback(QDBusMessage)),
-                                       SLOT(errorCallback(QDBusError)));
+                                       SLOT(errorFingerListCallback(QDBusError)));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -458,7 +458,7 @@ void MainWindow::onBtnAddVeinClicked()
     args << drvId << uid << idx << idxName;
     bool bCall = serviceInterface->callWithCallback("Enroll", args, this,
                                                     SLOT(enrollCallBack(const QDBusMessage &)),
-                                                    SLOT(errorCallBack(const QDBusError &)));
+                                                    SLOT(errorAddCallBack(const QDBusError &)));
     if(false == bCall) {
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("录入操作错误")));
         ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
@@ -504,7 +504,7 @@ void MainWindow::onBtnFingerChecked()
 
     bool bCall = serviceInterface->callWithCallback("Verify", args, this,
                                                     SLOT(verifyCallBack(const QDBusMessage &)),
-                                                    SLOT(errorCallBack(const QDBusError &)));
+                                                    SLOT(errorVerifyCallBack(const QDBusError &)));
     if(false == bCall) {
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("验证操作错误")));
         ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
@@ -659,6 +659,7 @@ void MainWindow::enrollCallBack(const QDBusMessage &reply)
     }
     default:
         ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(tr("录入失败")));
+        showVeinAddWidget(m_pCurrenFingerButton);
         break;
     }
     ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
@@ -693,7 +694,18 @@ void MainWindow::StopOpsCallBack(const QDBusMessage &reply)
 
 }
 
-void MainWindow::errorCallBack(const QDBusError &error)
+void MainWindow::errorAddCallBack(const QDBusError &error)
+{
+    qDebug() << "DBus Error: " << error.message();
+    QString qstrErrorMessage = error.message();
+    if(!qstrErrorMessage.isEmpty()){
+        ui->labelFingerText->setText(QString("<font color=%1>%2</font>").arg(SetConfig::getSetValue(_MessageErrorColor, "#FF0000")).arg(qstrErrorMessage));
+    }
+    ui->stackedWidget->widget(EnCreateUserWidgetIndex)->setEnabled(true);
+    showVeinAddWidget(m_pCurrenFingerButton);
+}
+
+void MainWindow::errorVerifyCallBack(const QDBusError &error)
 {
     qDebug() << "DBus Error: " << error.message();
     QString qstrErrorMessage = error.message();
