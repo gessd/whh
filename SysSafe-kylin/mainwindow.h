@@ -100,6 +100,8 @@ private slots:
     void errorCallback(QDBusError error);
     //指静脉信息列表
     void showFeaturesCallback(QDBusMessage callbackReply);
+    //任务栏图标双击事件
+    void onActivated(QSystemTrayIcon::ActivationReason reason);
 private:
     //初始主页手指按钮
     void initFingerData(QToolButton* button, int index);

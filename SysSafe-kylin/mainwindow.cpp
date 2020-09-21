@@ -129,6 +129,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->btnFingerCheck, SIGNAL(clicked()), this, SLOT(onBtnFingerChecked()));
     connect(ui->listWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onItemClicked(QListWidgetItem*)));
 
+    connect(m_pTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(onActivated(QSystemTrayIcon::ActivationReason)));
+
     m_pGroupLanguage = new QButtonGroup(this);
     m_pGroupLanguage->addButton(ui->radioButton_zh_cn, 0);
     m_pGroupLanguage->addButton(ui->radioButton_zh_tw, 1);
@@ -385,7 +387,7 @@ void MainWindow::onBtnTitleHelp()
 
 void MainWindow::onBtnTitleAbout()
 {
-    XMessageBox::message(this, tr("关于我们"), tr("东方创芯（北京）数字技术有限公司\n版本：V1.1"));
+    XMessageBox::message(this, tr("关于我们"), tr("东方创芯（北京）数字技术有限公司\n版本：V3.2.2"));
 }
 
 void MainWindow::onBtnBackMainClicked()
@@ -729,6 +731,11 @@ void MainWindow::showFeaturesCallback(QDBusMessage callbackReply)
             setButtonFingerInfo(pCurrentButton, false);
         }
     }
+}
+
+void MainWindow::onActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    if(QSystemTrayIcon::DoubleClick == reason) onShowWindow();
 }
 
 void MainWindow::initFingerData(QToolButton *button, int index)
