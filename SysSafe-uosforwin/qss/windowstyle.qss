@@ -1,0 +1,14 @@
+QWidget{border:none;}
+#centralWidget{image:url(:/images/background.png);}
+CreateUserDialog,#XMessageBox{border-image:url(:/images/background.png);}
+/*
+QPushButton, QToolButton{
+    color:#0A0A0A;
+}
+QPushButton, QToolButton:hover{
+    color:#262626;
+}
+QPushButton, QToolButton:pressed{
+    color:#303030;
+}  
+*/
